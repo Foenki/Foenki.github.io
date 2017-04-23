@@ -51,16 +51,16 @@ function launch()
 	acronym = $("#acronym").val().toUpperCase().replace(/[^A-Z]+/g, '');
 	if(acronym.length > 0)
 	{
-		var mainList = $("<ul>");
-		
+		var outerDiv = $("<div>");
 		for (var j = 0; j < selectedClasses.length + 1; j++){
 			processedClass =  j < selectedClasses.length ? selectedClasses[j] : "NEUTRAL";
 			var results = findDecks();
 			if(results.length > 0)
-			{
-				mainList.append($("<h4>").text(processedClass));
+			{		
+				outerDiv.append($("<h4>").text(processedClass + " " + "(" + results.length + " decks)"));
 			}
-
+			var container = $("<div>").addClass("container");
+			container.append($("<ul>"));
 			for(var idx = 0; idx < results.length && idx < 30; idx++)
 			{
 				var result = results[idx];
@@ -69,11 +69,14 @@ function launch()
 				{
 					deck += '<b class="'+result[i].rarity.toLowerCase()+'">' + result[i].name[0] + "</b>" + result[i].name.substring(1,result[i].name.length) + (i == result.length - 1 ? "]" : ", ");
 				}
-				mainList.append($("<li>").html(deck));
+				container.append($("<li>").html(deck));
 			}
+			
+			outerDiv.append(container);
+			outerDiv.append($("<br>"));
 		}
 		
-		$("#results").html(mainList);
+		$("#results").html(outerDiv);
 	}
 }
 
@@ -81,23 +84,34 @@ function findDecks()
 {
 	var validCards = allCards.filter(filterProcessedClass).sort(sortByOrderInDeck);
 	
-	return findAllCombinations(acronym, validCards);
+	var result = findAllCombinations(acronym, validCards);
+	if(processedClass != "NEUTRAL") result = result.filter(filterNeutralDecks);
+	
+	return result;
 }
 
 function findAllCombinations(string, useableCards)
 {
 	var result = [];
-	console.log("start " + string + " " + useableCards.length);
 	if(string.length > 0)
 	{
 		var letter = string[0];
-		var localUseable = useableCards.slice(0);
-		var previousSubCombinations
+		var localUseable = useableCards.slice();
+		var previousSubCombinations = [];
 		var tested = false;
-		for(var i = 0; i < localUseable.length; i++)
+		while(localUseable.length > 0)
 		{
 			var card = localUseable[0];
-			localUseable.splice(0,1);
+			localUseable.shift();
+			
+			for(var idx in previousSubCombinations)
+			{			
+				if(previousSubCombinations[idx].indexOf(card) != -1)
+				{
+					previousSubCombinations.splice(idx,1);
+				}
+			}
+
 			if(card.name[0] == letter)
 			{		
 				if(string.length > 1)
@@ -107,11 +121,12 @@ function findAllCombinations(string, useableCards)
 						previousSubCombinations = findAllCombinations(string.substring(1, string.length), localUseable);
 						tested = true;
 					}
-					var subCombinations = previousSubCombinations.splice(0);
-					for(var combination in subCombinations)
+					
+					for(var idx in previousSubCombinations)
 					{
-						subCombinations[combination].unshift(card);
-						result.push(subCombinations[combination]);
+						var local = previousSubCombinations[idx].slice();
+						local.unshift(card);
+						result.push(local);
 					}
 				}
 				else
@@ -119,20 +134,9 @@ function findAllCombinations(string, useableCards)
 					result.push([card]);
 				}
 			}
-			else
-			{
-				for(var idx in previousSubCombinations)
-				{
-					if(previousSubCombinations[idx].indexOf(card) != -1)
-					{
-						previousSubCombinations.splice(idx,1);
-					}
-				}
-			}
-			i--;
 		}
 	}
-	console.log("end " + string + " " + result.length);
+
 	return result;
 }
 
@@ -153,6 +157,17 @@ function filterProcessedClass(obj)
 		}
 	}
 	return result && acronym.indexOf(obj.name[0]) != -1;
+}
+
+function filterNeutralDecks(deck)
+{
+	result = true;
+	for(var idx = 0; idx < deck.length && result; idx++)
+	{
+		result = (deck[idx].cardClass == "NEUTRAL") && !('multiClassGroup' in deck[idx]);
+	}
+	
+	return !result;
 }
 
 function sortByOrderInDeck(card1, card2)
