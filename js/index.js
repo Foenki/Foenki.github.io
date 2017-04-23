@@ -1,4 +1,4 @@
-var classes = ['WARRIOR', 'SHAMAN', 'ROGUE', 'PALADIN', 'HUNTER', 'DRUID', 'WARLOCK', 'MAGE', 'PRIEST'];
+var classes = ['DRUID', 'HUNTER', 'MAGE', 'PALADIN', 'PRIEST', 'ROGUE', 'SHAMAN', 'WARLOCK', 'WARRIOR'];
 var proccessedClass;
 var allCards = [];
 var selectedClasses = classes;
@@ -49,11 +49,26 @@ function filterHeroes(card)
 function launch()
 {
 	acronym = $("#acronym").val().toUpperCase().replace(/[^A-Z]+/g, '');
-	console.log(selectedClasses);
+	var mainList = $("<ul>");
 	for (var j = 0; j < selectedClasses.length; j++){
 		processedClass = selectedClasses[j];
-		findDeck();
+		var result = findDeck();
+		if(result != null)
+		{
+			var deck = "[";
+			console.log(result);
+			for(var i = 0; i < result.length; i++)
+			{
+				console.log(result[i]);
+				deck += "<b>" + result[i].name[0] + "</b>" + result[i].name.substring(1,result[i].name.length) + (i == result.length - 1 ? "]" : ", ");
+			}
+			console.log(deck);
+			mainList.append($("<h4>").text(processedClass));
+			mainList.append($("<li>").html(deck));
+		}
 	}
+	
+	$("#results").html(mainList);
 }
 
 function findDeck()
@@ -82,12 +97,29 @@ function findDeck()
 		result.push(chosenCard);
 	}
 	
-	console.log(result);
+	if(validCards.length == 0)
+		result = null;
+	
+	return result;
 }
 
 function filterProcessedClass(obj)
 {
-	return ('cardClass' in obj && (obj.cardClass == processedClass || obj.cardClass == "NEUTRAL"));
+	var result = false;
+	if('cardClass' in obj)
+	{
+		result = obj.cardClass == processedClass;
+		
+		if(!result && obj.cardClass == "NEUTRAL")
+		{
+			result = 
+				'multiClassGroup' in obj
+				&& ((obj.multiClassGroup == "JADE_LOTUS" && (processedClass == "DRUID" || processedClass == "ROGUE" || processedClass == "SHAMAN"))
+					|| (obj.multiClassGroup == "KABAL" && (processedClass == "MAGE" || processedClass == "PRIEST" || processedClass == "WARLOCK"))
+					|| (obj.multiClassGroup == "GRIMY_GOONS" && (processedClass == "WARRIOR" || processedClass == "HUNTER" || processedClass == "PALADIN")));
+		}
+	}
+	return result;
 }
 
 function sortByOrderInDeck(card1, card2)
