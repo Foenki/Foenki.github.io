@@ -14,26 +14,29 @@
 		<br>
 		<div class="container" id="mainContainer">
 			
-			<div class="row" id="textInput">		
-				<div class="col-md-4 col-sm-6 col-xs-12">
+			<div class="row">		
+				<div class="col-md-4 col-xs-10" id="textInput">
 					<input type="text" class="form-control" id="acronym" placeholder="Acronym">
 				</div>
 				
-				<div class="col-md-6 col-sm-6 col-xs-12" id="classIcons">
-					<img src="img/classIcons/druid.png" alt="Druid" class="classIcon druid" onclick="changeStatus('druid');"/>
-					<img src="img/classIcons/hunter.png" alt="Hunter" class="classIcon hunter" onclick="changeStatus('hunter');"/>
-					<img src="img/classIcons/mage.png" alt="Mage" class="classIcon mage" onclick="changeStatus('mage');"/>
-					<img src="img/classIcons/paladin.png" alt="Paladin" class="classIcon paladin" onclick="changeStatus('paladin');"/>				
-					<img src="img/classIcons/priest.png" alt="Priest" class="classIcon priest" onclick="changeStatus('priest');"/>
-					<img src="img/classIcons/rogue.png" alt="Rogue" class="classIcon rogue" onclick="changeStatus('rogue');"/>
-					<img src="img/classIcons/shaman.png" alt="Shaman" class="classIcon shaman" onclick="changeStatus('shaman');"/>				
-					<img src="img/classIcons/warlock.png" alt="Warlock" class="classIcon warlock" onclick="changeStatus('warlock');"/>
-					<img src="img/classIcons/warrior.png" alt="Warrior" class="classIcon warrior" onclick="changeStatus('warrior');"/>
-				</div>
-				
-				<div class="col-md-2 col-sm-3 col-xs-4" id="launchButton">
+				<div class="col-xs-2" id="launchButton">
 					<button class="btn btn-primary">Launch</button>
 				</div>
+				
+				<div id="iconsParent">
+					<div class="col-md-6 col-xs-12" id="classIcons">
+						<img src="img/classIcons/druid.png" alt="Druid" class="classIcon druid" onclick="changeStatus('druid');"/>
+						<img src="img/classIcons/hunter.png" alt="Hunter" class="classIcon hunter" onclick="changeStatus('hunter');"/>
+						<img src="img/classIcons/mage.png" alt="Mage" class="classIcon mage" onclick="changeStatus('mage');"/>
+						<img src="img/classIcons/paladin.png" alt="Paladin" class="classIcon paladin" onclick="changeStatus('paladin');"/>				
+						<img src="img/classIcons/priest.png" alt="Priest" class="classIcon priest" onclick="changeStatus('priest');"/>
+						<img src="img/classIcons/rogue.png" alt="Rogue" class="classIcon rogue" onclick="changeStatus('rogue');"/>
+						<img src="img/classIcons/shaman.png" alt="Shaman" class="classIcon shaman" onclick="changeStatus('shaman');"/>				
+						<img src="img/classIcons/warlock.png" alt="Warlock" class="classIcon warlock" onclick="changeStatus('warlock');"/>
+						<img src="img/classIcons/warrior.png" alt="Warrior" class="classIcon warrior" onclick="changeStatus('warrior');"/>
+					</div>
+				</div>				
+
 			</div>
 
 		</div>

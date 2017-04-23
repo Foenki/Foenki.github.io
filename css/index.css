@@ -9,8 +9,17 @@
 	opacity:0.7;
 }
 
-#classIcons, #textInput, #launchButton
+#iconsParent
 {
-	display:block;
-	margin:auto;
+	text-align:center;
+}
+
+#textInput, #launchButton
+{
+	padding:10px;
+}
+
+#classIcons
+{
+  display:inline-block;
 }
