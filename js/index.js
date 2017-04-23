@@ -49,57 +49,90 @@ function filterHeroes(card)
 function launch()
 {
 	acronym = $("#acronym").val().toUpperCase().replace(/[^A-Z]+/g, '');
-	var mainList = $("<ul>");
-	for (var j = 0; j < selectedClasses.length; j++){
-		processedClass = selectedClasses[j];
-		var result = findDeck();
-		if(result != null)
-		{
-			var deck = "[";
-			console.log(result);
-			for(var i = 0; i < result.length; i++)
+	if(acronym.length > 0)
+	{
+		var mainList = $("<ul>");
+		
+		for (var j = 0; j < selectedClasses.length + 1; j++){
+			processedClass =  j < selectedClasses.length ? selectedClasses[j] : "NEUTRAL";
+			var results = findDecks();
+			if(results.length > 0)
 			{
-				console.log(result[i]);
-				deck += "<b>" + result[i].name[0] + "</b>" + result[i].name.substring(1,result[i].name.length) + (i == result.length - 1 ? "]" : ", ");
+				mainList.append($("<h4>").text(processedClass));
 			}
-			console.log(deck);
-			mainList.append($("<h4>").text(processedClass));
-			mainList.append($("<li>").html(deck));
+
+			for(var idx = 0; idx < results.length && idx < 30; idx++)
+			{
+				var result = results[idx];
+				var deck = "[";
+				for(var i = 0; i < result.length; i++)
+				{
+					deck += '<b class="'+result[i].rarity.toLowerCase()+'">' + result[i].name[0] + "</b>" + result[i].name.substring(1,result[i].name.length) + (i == result.length - 1 ? "]" : ", ");
+				}
+				mainList.append($("<li>").html(deck));
+			}
 		}
+		
+		$("#results").html(mainList);
 	}
-	
-	$("#results").html(mainList);
 }
 
-function findDeck()
+function findDecks()
 {
 	var validCards = allCards.filter(filterProcessedClass).sort(sortByOrderInDeck);
-	var result = [];
 	
-	for (var i = 0; i < acronym.length && validCards.length > 0; i++) 
+	return findAllCombinations(acronym, validCards);
+}
+
+function findAllCombinations(string, useableCards)
+{
+	var result = [];
+	console.log("start " + string + " " + useableCards.length);
+	if(string.length > 0)
 	{
-		var letter = acronym[i];
-		var chosenCard = null;
-		for(var j = 0; j < validCards.length && chosenCard == null; j++)
+		var letter = string[0];
+		var localUseable = useableCards.slice(0);
+		var previousSubCombinations
+		var tested = false;
+		for(var i = 0; i < localUseable.length; i++)
 		{
-			if(validCards[j].name[0] == letter)
-			{
-				chosenCard = validCards[0];
-				validCards.splice(0,1);
+			var card = localUseable[0];
+			localUseable.splice(0,1);
+			if(card.name[0] == letter)
+			{		
+				if(string.length > 1)
+				{
+					if(!tested)
+					{
+						previousSubCombinations = findAllCombinations(string.substring(1, string.length), localUseable);
+						tested = true;
+					}
+					var subCombinations = previousSubCombinations.splice(0);
+					for(var combination in subCombinations)
+					{
+						subCombinations[combination].unshift(card);
+						result.push(subCombinations[combination]);
+					}
+				}
+				else
+				{
+					result.push([card]);
+				}
 			}
 			else
 			{
-				validCards.splice(0,1);
+				for(var idx in previousSubCombinations)
+				{
+					if(previousSubCombinations[idx].indexOf(card) != -1)
+					{
+						previousSubCombinations.splice(idx,1);
+					}
+				}
 			}
-			j--;
+			i--;
 		}
-		
-		result.push(chosenCard);
 	}
-	
-	if(validCards.length == 0)
-		result = null;
-	
+	console.log("end " + string + " " + result.length);
 	return result;
 }
 
@@ -108,18 +141,18 @@ function filterProcessedClass(obj)
 	var result = false;
 	if('cardClass' in obj)
 	{
-		result = obj.cardClass == processedClass;
+		result = obj.cardClass == processedClass && !('multiClassGroup' in obj);
 		
 		if(!result && obj.cardClass == "NEUTRAL")
 		{
 			result = 
-				'multiClassGroup' in obj
-				&& ((obj.multiClassGroup == "JADE_LOTUS" && (processedClass == "DRUID" || processedClass == "ROGUE" || processedClass == "SHAMAN"))
+				!('multiClassGroup' in obj)
+				|| ((obj.multiClassGroup == "JADE_LOTUS" && (processedClass == "DRUID" || processedClass == "ROGUE" || processedClass == "SHAMAN"))
 					|| (obj.multiClassGroup == "KABAL" && (processedClass == "MAGE" || processedClass == "PRIEST" || processedClass == "WARLOCK"))
 					|| (obj.multiClassGroup == "GRIMY_GOONS" && (processedClass == "WARRIOR" || processedClass == "HUNTER" || processedClass == "PALADIN")));
 		}
 	}
-	return result;
+	return result && acronym.indexOf(obj.name[0]) != -1;
 }
 
 function sortByOrderInDeck(card1, card2)

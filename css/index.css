@@ -28,3 +28,28 @@
 {
 	height:40px;
 }
+
+.free
+{
+	color:#000000;
+}
+
+.common
+{
+	color:#0FAF03;
+}
+
+.rare
+{
+	color:#198EFF;
+}
+
+.epic
+{
+	color:#AB48EE;
+}
+
+.legendary
+{
+	color:#F07000;
+}
