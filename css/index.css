@@ -14,7 +14,7 @@
 	text-align:center;
 }
 
-#textInput, #launchButton
+#textInput, #buttons
 {
 	padding:10px;
 }
@@ -22,6 +22,17 @@
 #classIcons
 {
   display:inline-block;
+}
+
+#languageSelect
+{
+	display:inline!important;
+	width:70px;
+}
+
+#launchButton
+{
+	display:inline!important;
 }
 
 #footer

@@ -3,6 +3,7 @@ var proccessedClass;
 var allCards = [];
 var selectedClasses = classes;
 var acronym = "";
+var loadedLanguage = "EN";
 
 function changeStatus(hero)
 {
@@ -32,6 +33,19 @@ $(window).load(function ()
 	});
 });
 
+function loadCards(language)
+{
+	$.ajax({
+		dataType: "json",
+		url: "https://api.hearthstonejson.com/v1/latest/"+language+"/cards.collectible.json",
+		data: "",
+		success: function(json) {
+			allCards = json.filter(filterHeroes);
+			launch();
+		}
+	});
+}
+
 $(document).ready(function() {
 
    $('#acronym').keypress(function(e){
@@ -48,35 +62,45 @@ function filterHeroes(card)
 
 function launch()
 {
-	acronym = $("#acronym").val().toUpperCase().replace(/[^A-Z]+/g, '');
-	if(acronym.length > 0)
+	var wantedLanguage = $("#languageSelect").val();
+	if(wantedLanguage != loadedLanguage)
 	{
-		var outerDiv = $("<div>");
-		for (var j = 0; j < selectedClasses.length + 1; j++){
-			processedClass =  j < selectedClasses.length ? selectedClasses[j] : "NEUTRAL";
-			var results = findDecks();
-			if(results.length > 0)
-			{		
-				outerDiv.append($("<h4>").text(processedClass + " " + "(" + results.length + " decks)"));
-			}
-			var container = $("<div>").addClass("container");
-			container.append($("<ul>"));
-			for(var idx = 0; idx < results.length && idx < 30; idx++)
-			{
-				var result = results[idx];
-				var deck = "[";
-				for(var i = 0; i < result.length; i++)
-				{
-					deck += '<b class="'+result[i].rarity.toLowerCase()+'">' + result[i].name[0] + "</b>" + result[i].name.substring(1,result[i].name.length) + (i == result.length - 1 ? "]" : ", ");
+		loadedLanguage = wantedLanguage;
+		loadCards(languageCorrespondance(wantedLanguage));
+	}
+	else
+	{
+	
+		acronym = $("#acronym").val().toUpperCase().replace(/[^A-Z]+/g, '');
+		if(acronym.length > 0)
+		{
+			var outerDiv = $("<div>");
+			for (var j = 0; j < selectedClasses.length + 1; j++){
+				processedClass =  j < selectedClasses.length ? selectedClasses[j] : "NEUTRAL";
+				var results = findDecks();
+				if(results.length > 0)
+				{		
+					outerDiv.append($("<h4>").text(processedClass + " " + "(" + results.length + " decks)"));
 				}
-				container.append($("<li>").html(deck));
+				var container = $("<div>").addClass("container");
+				container.append($("<ul>"));
+				for(var idx = 0; idx < results.length && idx < 30; idx++)
+				{
+					var result = results[idx];
+					var deck = "[";
+					for(var i = 0; i < result.length; i++)
+					{
+						deck += '<b class="'+result[i].rarity.toLowerCase()+'">' + result[i].name[0] + "</b>" + result[i].name.substring(1,result[i].name.length) + (i == result.length - 1 ? "]" : ", ");
+					}
+					container.append($("<li>").html(deck));
+				}
+				
+				outerDiv.append(container);
+				outerDiv.append($("<br>"));
 			}
 			
-			outerDiv.append(container);
-			outerDiv.append($("<br>"));
+			$("#results").html(outerDiv);
 		}
-		
-		$("#results").html(outerDiv);
 	}
 }
 
@@ -181,6 +205,22 @@ function sortByOrderInDeck(card1, card2)
 		if(card1.name.toUpperCase() < card2.name.toUpperCase()) return -1;
     else if(card1.name.toUpperCase() > card2.name.toUpperCase()) return 1;
     else return 0;
+	}
+}
+
+function languageCorrespondance(shortLanguage)
+{
+	switch(shortLanguage)
+	{
+		case "EN": return "enUS";
+		case "DE": return "deDE";
+		case "FR": return "frFR";
+		case "ES": return "esES";
+		case "MX": return "esMX";
+		case "IT": return "itIT";
+		case "PL": return "plPL";
+		case "BR": return "ptBR";
+		default: return "";
 	}
 }
 
