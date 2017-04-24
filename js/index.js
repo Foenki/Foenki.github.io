@@ -4,6 +4,7 @@ var allCards = [];
 var selectedClasses = classes;
 var acronym = "";
 var loadedLanguage = "EN";
+var lastResults = new Map();
 const nbDisplayedDecks = 30;
 
 function changeStatus(hero)
@@ -81,6 +82,7 @@ function launch()
 				if(results.length > 0)
 				{
 					display(results, outerDiv);
+					lastResults.set(processedClass, results);
 				}
 			}
 			
@@ -91,10 +93,13 @@ function launch()
 
 function display(results, outerDiv)
 {
-	outerDiv.append($("<h4>").text(processedClass + " " + "(" + results.length + " decks)"));
+	const nbDecksFound = results.length;
+	var title = $("<p>").html(processedClass + " " + "(" + nbDecksFound + " deck" + (nbDecksFound > 1 ? "s"	: "") + ")   ");
+	if(nbDecksFound > nbDisplayedDecks) title.append($("<button>").addClass("btn btn-default btn-sm repeat").attr("type", "button").attr("onClick", "reroll('"+processedClass+"');").html("<span class='glyphicon glyphicon-repeat'></span>"));
+	outerDiv.append($("<h4>").html(title));
 	var chosenResults = chooseDecksToDisplay(results);
 
-	var container = $("<div>").addClass("container");
+	var container = $("<div>").addClass("container").attr("id", "results"+processedClass);
 	container.append($("<ul>"));
 	for(var idx = 0; idx < chosenResults.length; idx++)
 	{
@@ -109,6 +114,28 @@ function display(results, outerDiv)
 	
 	outerDiv.append(container);
 	outerDiv.append($("<br>"));
+}
+
+function reroll(className)
+{
+	var decks = lastResults.get(className);
+	console.log(decks.length);
+	decks = chooseDecksToDisplay(decks);
+	console.log(decks.length);
+	var classDiv = $("#results"+className);
+	classDiv.empty();
+	classDiv.append($("<ul>"));
+	for(var i = 0; i < decks.length; ++i)
+	{
+		var deck = decks[i];
+		var html = "[";
+		for(var j = 0; j < deck.length; j++)
+		{
+			html += '<b class="'+ deck[j].rarity.toLowerCase()+'">' + deck[j].name[0] + "</b>" + deck[j].name.substring(1,deck[j].name.length) + (j == deck.length - 1 ? "]" : ", ");
+		}
+		console.log(i);
+		classDiv.append($("<li>").html(html));		
+	}
 }
 
 function chooseDecksToDisplay(results)

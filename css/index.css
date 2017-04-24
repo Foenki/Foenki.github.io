@@ -64,3 +64,13 @@
 {
 	color:#F07000;
 }
+
+.repeat
+{
+	height:30px;
+	width:35px;
+}
+
+.btn:focus {
+  outline: none;
+}
