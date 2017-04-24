@@ -4,6 +4,7 @@ var allCards = [];
 var selectedClasses = classes;
 var acronym = "";
 var loadedLanguage = "EN";
+const nbDisplayedDecks = 30;
 
 function changeStatus(hero)
 {
@@ -70,7 +71,6 @@ function launch()
 	}
 	else
 	{
-	
 		acronym = $("#acronym").val().toUpperCase().replace(/[^A-Z]+/g, '');
 		if(acronym.length > 0)
 		{
@@ -79,24 +79,9 @@ function launch()
 				processedClass =  j < selectedClasses.length ? selectedClasses[j] : "NEUTRAL";
 				var results = findDecks();
 				if(results.length > 0)
-				{		
-					outerDiv.append($("<h4>").text(processedClass + " " + "(" + results.length + " decks)"));
-				}
-				var container = $("<div>").addClass("container");
-				container.append($("<ul>"));
-				for(var idx = 0; idx < results.length && idx < 30; idx++)
 				{
-					var result = results[idx];
-					var deck = "[";
-					for(var i = 0; i < result.length; i++)
-					{
-						deck += '<b class="'+result[i].rarity.toLowerCase()+'">' + result[i].name[0] + "</b>" + result[i].name.substring(1,result[i].name.length) + (i == result.length - 1 ? "]" : ", ");
-					}
-					container.append($("<li>").html(deck));
+					display(results, outerDiv);
 				}
-				
-				outerDiv.append(container);
-				outerDiv.append($("<br>"));
 			}
 			
 			$("#results").html(outerDiv);
@@ -104,11 +89,70 @@ function launch()
 	}
 }
 
+function display(results, outerDiv)
+{
+	outerDiv.append($("<h4>").text(processedClass + " " + "(" + results.length + " decks)"));
+	var chosenResults = chooseDecksToDisplay(results);
+
+	var container = $("<div>").addClass("container");
+	container.append($("<ul>"));
+	for(var idx = 0; idx < chosenResults.length; idx++)
+	{
+		var result = chosenResults[idx];
+		var deck = "[";
+		for(var i = 0; i < result.length; i++)
+		{
+			deck += '<b class="'+result[i].rarity.toLowerCase()+'">' + result[i].name[0] + "</b>" + result[i].name.substring(1,result[i].name.length) + (i == result.length - 1 ? "]" : ", ");
+		}
+		container.append($("<li>").html(deck));
+	}
+	
+	outerDiv.append(container);
+	outerDiv.append($("<br>"));
+}
+
+function chooseDecksToDisplay(results)
+{
+	var result = [];
+	if(results.length < nbDisplayedDecks) return results;
+	
+	if(results.length > 5 * nbDisplayedDecks)
+	{
+		var chosenIndexes = [];
+		while(result.length < nbDisplayedDecks)
+		{
+			var chosenIdx = Math.floor(Math.random()*results.length);
+			if(chosenIndexes.indexOf(chosenIdx) == -1)
+			{
+				chosenIndexes.push(chosenIdx);
+				result.push(results[chosenIdx])
+			}
+		}
+	}
+	else
+	{
+		var possibleIndexes = new Array(results.length);
+		for(var i = 0; i < results.length; i++) possibleIndexes[i] = i;
+		
+		while(result.length < nbDisplayedDecks)
+		{
+			var chosenIdx = Math.floor(Math.random()*possibleIndexes.length);
+			result.push(results[possibleIndexes[chosenIdx]]);
+			possibleIndexes.splice(chosenIdx, 1);
+		}
+	}
+	return result;
+}
+
 function findDecks()
 {
 	var validCards = allCards.filter(filterProcessedClass).sort(sortByOrderInDeck);
 	
 	var result = findAllCombinations(acronym, validCards);
+	for(var idx in result)
+	{
+		result[idx].reverse();
+	}
 	if(processedClass != "NEUTRAL") result = result.filter(filterNeutralDecks);
 	
 	return result;
@@ -149,7 +193,7 @@ function findAllCombinations(string, useableCards)
 					for(var idx in previousSubCombinations)
 					{
 						var local = previousSubCombinations[idx].slice();
-						local.unshift(card);
+						local.push(card);
 						result.push(local);
 					}
 				}
