@@ -1,16 +1,17 @@
-var classes = ['DRUID', 'HUNTER', 'MAGE', 'PALADIN', 'PRIEST', 'ROGUE', 'SHAMAN', 'WARLOCK', 'WARRIOR'];
+const classes = ['DRUID', 'HUNTER', 'MAGE', 'PALADIN', 'PRIEST', 'ROGUE', 'SHAMAN', 'WARLOCK', 'WARRIOR'];
 var proccessedClass;
 var allCards = [];
 var selectedClasses = classes;
 var acronym = "";
 var loadedLanguage = "EN";
 var lastResults = new Map();
-const nbDisplayedDecks = 30;
+const nbDisplayedDecks = 50;
 
+// Callback function on click on class icon
 function changeStatus(hero)
 {
-	var className = hero.toUpperCase();
-	var idx = selectedClasses.indexOf(className);
+	const className = hero.toUpperCase();
+	const idx = selectedClasses.indexOf(className);
 	if(idx != -1)
 	{
 		selectedClasses.splice(idx,1);
@@ -23,6 +24,7 @@ function changeStatus(hero)
 	}
 }
 
+// Initial loading of cards (EN)
 $(window).load(function ()
 {
 	$.ajax({
@@ -35,6 +37,7 @@ $(window).load(function ()
 	});
 });
 
+// Load cards of given language (ex : 'enUS')
 function loadCards(language)
 {
 	$.ajax({
@@ -48,6 +51,7 @@ function loadCards(language)
 	});
 }
 
+// Enter press to trigger generation
 $(document).ready(function() {
 
    $('#acronym').keypress(function(e){
@@ -57,16 +61,19 @@ $(document).ready(function() {
 
 });
 
+// Filters out heroes
 function filterHeroes(card)
 {
 	return card.type != "HERO";
 }
 
+// main()
 function launch()
 {
-	var wantedLanguage = $("#languageSelect").val();
+	const wantedLanguage = $("#languageSelect").val();
 	if(wantedLanguage != loadedLanguage)
 	{
+		// Cards for this lanuage not loaded
 		loadedLanguage = wantedLanguage;
 		loadCards(languageCorrespondance(wantedLanguage));
 	}
@@ -91,6 +98,7 @@ function launch()
 	}
 }
 
+// Displays the results of findDecks()
 function display(results, outerDiv)
 {
 	const nbDecksFound = results.length;
@@ -103,7 +111,7 @@ function display(results, outerDiv)
 	container.append($("<ul>"));
 	for(var idx = 0; idx < chosenResults.length; idx++)
 	{
-		var result = chosenResults[idx];
+		const result = chosenResults[idx];
 		var deck = "[";
 		for(var i = 0; i < result.length; i++)
 		{
@@ -116,12 +124,12 @@ function display(results, outerDiv)
 	outerDiv.append($("<br>"));
 }
 
+// Callback function for click on reroll button
 function reroll(className)
 {
 	var decks = lastResults.get(className);
-	console.log(decks.length);
 	decks = chooseDecksToDisplay(decks);
-	console.log(decks.length);
+
 	var classDiv = $("#results"+className);
 	classDiv.empty();
 	classDiv.append($("<ul>"));
@@ -133,11 +141,11 @@ function reroll(className)
 		{
 			html += '<b class="'+ deck[j].rarity.toLowerCase()+'">' + deck[j].name[0] + "</b>" + deck[j].name.substring(1,deck[j].name.length) + (j == deck.length - 1 ? "]" : ", ");
 		}
-		console.log(i);
 		classDiv.append($("<li>").html(html));		
 	}
 }
 
+// Selects 30 random decks from given input
 function chooseDecksToDisplay(results)
 {
 	var result = [];
@@ -171,6 +179,7 @@ function chooseDecksToDisplay(results)
 	return result;
 }
 
+// Find combinations and processes them
 function findDecks()
 {
 	var validCards = allCards.filter(filterProcessedClass).sort(sortByOrderInDeck);
@@ -185,6 +194,7 @@ function findDecks()
 	return result;
 }
 
+// Recursive function to compute every possible combination
 function findAllCombinations(string, useableCards)
 {
 	var result = [];
@@ -199,6 +209,7 @@ function findAllCombinations(string, useableCards)
 			var card = localUseable[0];
 			localUseable.shift();
 			
+			// Delete useless stored subCombinations
 			for(var idx in previousSubCombinations)
 			{			
 				if(previousSubCombinations[idx].indexOf(card) != -1)
@@ -235,6 +246,7 @@ function findAllCombinations(string, useableCards)
 	return result;
 }
 
+// Filters out the cards that cannot be put in a deck of class processedClass
 function filterProcessedClass(obj)
 {
 	var result = false;
@@ -254,6 +266,7 @@ function filterProcessedClass(obj)
 	return result && acronym.indexOf(obj.name[0]) != -1;
 }
 
+// Filters out decks with only neutral cards
 function filterNeutralDecks(deck)
 {
 	result = true;
@@ -265,6 +278,7 @@ function filterNeutralDecks(deck)
 	return !result;
 }
 
+// Sorts cards by the order in which they appear in a deck
 function sortByOrderInDeck(card1, card2)
 {
 	if(card1.cost < card2.cost)
@@ -279,6 +293,7 @@ function sortByOrderInDeck(card1, card2)
 	}
 }
 
+// Makes the correspondance between 2 letters shortname and database name
 function languageCorrespondance(shortLanguage)
 {
 	switch(shortLanguage)
