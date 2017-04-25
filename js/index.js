@@ -209,12 +209,13 @@ function findAllCombinations(string, useableCards)
 			var card = localUseable[0];
 			localUseable.shift();
 			
-			// Delete useless stored subCombinations
-			for(var idx in previousSubCombinations)
+// Delete useless stored subCombinations
+			for(var idx = 0; idx < previousSubCombinations.length; ++idx)
 			{			
 				if(previousSubCombinations[idx].indexOf(card) != -1)
 				{
 					previousSubCombinations.splice(idx,1);
+					idx--;
 				}
 			}
 
