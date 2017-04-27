@@ -14,25 +14,36 @@
 	text-align:center;
 }
 
-#textInput, #buttons
+#languageSelect
 {
-	padding:10px;
+	width:20%;
+	max-width:68px;
+}
+
+#acronym
+{
+	width:80%;
+}
+
+.nopadding {
+   padding-left: 0;
+	 padding-right: 0;
+}
+
+.input-group
+{
+	width:100%;
+}
+
+#buttons, #launchButtonParent
+{
+	padding-top:10px;
+	height:39.11px;
 }
 
 #classIcons
 {
   display:inline-block;
-}
-
-#languageSelect
-{
-	display:inline!important;
-	width:70px;
-}
-
-#launchButton
-{
-	display:inline!important;
 }
 
 #footer

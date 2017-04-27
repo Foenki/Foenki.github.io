@@ -14,27 +14,31 @@
 		<br>
 		<div class="container" id="mainContainer">
 			
-			<div class="row">		
-				<div class="col-md-4 col-xs-10" id="textInput">
-					<input type="text" class="form-control" id="acronym" placeholder="Acronym">
+			<div class="row no-gutters">		
+				<div class="col-md-4 col-xs-10 nopadding">
+					<div class="input-group" id="buttons">
+						<input type="text" class="form-control" id="acronym" placeholder="Acronym">
+						<select class="form-control" id="languageSelect">
+							<option>EN</option>
+							<option>DE</option>
+							<option>ES</option>
+							<option>FR</option>
+							<option>IT</option>
+							<option>MX</option>
+							<option>PL</option>
+							<option>BR</option>
+						</select> 
+					</div>
 				</div>
 				
-				<div class="col-xs-2" id="buttons">
-					<select class="form-control" id="languageSelect">
-						<option>EN</option>
-						<option>DE</option>
-						<option>ES</option>
-						<option>FR</option>
-						<option>IT</option>
-						<option>MX</option>
-						<option>PL</option>
-						<option>BR</option>
-					</select> 
-					<button class="btn btn-primary" id="launchButton" onClick="launch();">Launch</button>
+				<div class="col-xs-2 nopadding">
+					<div id="launchButtonParent">
+						<button class="btn btn-primary" id="launchButton" onClick="launch();">Launch</button>
+					</div>
 				</div>
 				
-				<div id="iconsParent">
-					<div class="col-md-6 col-xs-12" id="classIcons">
+				<div id="iconsParent" class="col-md-6 col-xs-12">
+					<div id="classIcons">
 						<img src="img/classIcons/druid.png" alt="Druid" class="classIcon druid" onclick="changeStatus('druid');"/>
 						<img src="img/classIcons/hunter.png" alt="Hunter" class="classIcon hunter" onclick="changeStatus('hunter');"/>
 						<img src="img/classIcons/mage.png" alt="Mage" class="classIcon mage" onclick="changeStatus('mage');"/>
@@ -51,7 +55,7 @@
 			
 			<br>
 			<div class="row">
-				<div id="results">
+				<div id="results" class="container">
 				</div>
 			</div>
 			
