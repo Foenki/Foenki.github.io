@@ -103,6 +103,10 @@ function display(results, outerDiv)
 {
 	const nbDecksFound = results.length;
 	var title = $("<p>").html(processedClass + " " + "(" + nbDecksFound + " deck" + (nbDecksFound > 1 ? "s"	: "") + ")   ");
+	title.append($("<button>").addClass("btn btn-default btn-sm dust").attr("type", "button").attr("onClick", "sort('"+processedClass+"', 'asc');").html("<img src='img/dustIcon.png' class='smallDust'/>"));
+	title.append($("<button>").addClass("btn btn-default btn-sm dust").attr("type", "button").attr("onClick", "sort('"+processedClass+"', 'desc');").html("<img src='img/dustIcon.png' class='largeDust'/>"));
+	title.append($("<button>").addClass("btn btn-default btn-sm dust").attr("type", "button").attr("onClick", "sort('"+processedClass+"', 'mana');").html("<img src='img/manaIcon.png' class='largeDust'/>"));
+
 	if(nbDecksFound > nbDisplayedDecks) title.append($("<button>").addClass("btn btn-default btn-sm repeat").attr("type", "button").attr("onClick", "reroll('"+processedClass+"');").html("<span class='glyphicon glyphicon-repeat'></span>"));
 	outerDiv.append($("<h4>").html(title));
 	var chosenResults = chooseDecksToDisplay(results);
@@ -179,7 +183,74 @@ function chooseDecksToDisplay(results)
 	return result;
 }
 
-// Find combinations and processes them
+function sort(className, order)
+{
+	var decks = lastResults.get(className);
+	if(order == 'asc' || order == 'desc')
+	{
+		decks.sort(costLess);
+	}
+	else
+	{
+		decks.sort(maxManaCost);
+	}
+	var classDiv = $("#results"+className);
+	classDiv.empty();
+	classDiv.append($("<ul>"));
+	for(var i = 0; i < nbDisplayedDecks && i < decks.length; ++i)
+	{
+		var deck = order == 'desc' ? decks[decks.length - i - 1] : decks[i];
+		var html = "[";
+		for(var j = 0; j < deck.length; j++)
+		{
+			html += '<b class="'+ deck[j].rarity.toLowerCase()+'">' + deck[j].name[0] + "</b>" + deck[j].name.substring(1,deck[j].name.length) + (j == deck.length - 1 ? "]" : ", ");
+		}
+		classDiv.append($("<li>").html(html));		
+	}
+}
+
+function costLess(deck1, deck2)
+{
+	var costDeck1 = 0;
+	var costDeck2 = 0;
+	for(var i = 0; i < deck1.length; ++i)
+	{
+		costDeck1 += getCost(deck1[i]);
+		costDeck2 += getCost(deck2[i]);
+	}
+	
+	return costDeck1 - costDeck2;
+}
+
+function maxManaCost(deck1, deck2)
+{
+	return (deck1[deck1.length-1].cost - deck1[0].cost) - (deck2[deck2.length-1].cost - deck2[0].cost);
+}
+
+function getCost(card)
+{
+	var cost = 0;
+
+	if(card.rarity == "COMMON")
+	{
+		cost = 40;
+	}
+	else if(card.rarity == "RARE")
+	{
+		cost = 100;
+	}
+	else if(card.rarity == "EPIC")
+	{
+		cost = 400;
+	}
+	else if(card.rarity == "LEGENDARY")
+	{
+		cost = 1600;
+	}
+		
+	return cost;
+}
+
 function findDecks()
 {
 	var validCards = allCards.filter(filterProcessedClass).sort(sortByOrderInDeck);
@@ -310,5 +381,3 @@ function languageCorrespondance(shortLanguage)
 		default: return "";
 	}
 }
-
-
