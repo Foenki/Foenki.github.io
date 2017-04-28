@@ -11,39 +11,28 @@
 
 #iconsParent
 {
-	text-align:center;
+	text-align:right;
 }
 
-#languageSelect
+#textInput, #buttons
 {
-	width:20%;
-	max-width:68px;
-}
-
-#acronym
-{
-	width:80%;
-}
-
-.nopadding {
-   padding-left: 0;
-	 padding-right: 0;
-}
-
-.input-group
-{
-	width:100%;
-}
-
-#buttons, #launchButtonParent
-{
-	padding-top:10px;
-	height:39.11px;
+	padding:10px;
 }
 
 #classIcons
 {
   display:inline-block;
+}
+
+#languageSelect
+{
+	display:inline!important;
+	width:70px;
+}
+
+#launchButton
+{
+	display:inline!important;
 }
 
 #footer
@@ -94,4 +83,11 @@
 .largeDust
 {
 	height:20px;
+}
+
+.timer
+{
+	font-style:oblique;
+	color:black;
+	float:right;
 }
