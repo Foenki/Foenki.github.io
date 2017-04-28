@@ -5,13 +5,12 @@ var selectedClasses = classes;
 var acronym = "";
 var loadedLanguage = "EN";
 var lastResults = new Map();
-const nbDisplayedDecks = 50;
+const nbDisplayedDecks = 30;
 
-// Callback function on click on class icon
 function changeStatus(hero)
 {
-	const className = hero.toUpperCase();
-	const idx = selectedClasses.indexOf(className);
+	var className = hero.toUpperCase();
+	var idx = selectedClasses.indexOf(className);
 	if(idx != -1)
 	{
 		selectedClasses.splice(idx,1);
@@ -22,9 +21,9 @@ function changeStatus(hero)
 		selectedClasses.push(className);
 		$("."+hero).css("opacity", 1.);
 	}
+	console.log("status changed");
 }
 
-// Initial loading of cards (EN)
 $(window).load(function ()
 {
 	$.ajax({
@@ -33,11 +32,11 @@ $(window).load(function ()
 		data: "",
 		success: function(json) {
 			allCards = json.filter(filterHeroes);
+			allCards.forEach(lightCard);
 		}
 	});
 });
 
-// Load cards of given language (ex : 'enUS')
 function loadCards(language)
 {
 	$.ajax({
@@ -46,12 +45,22 @@ function loadCards(language)
 		data: "",
 		success: function(json) {
 			allCards = json.filter(filterHeroes);
+			allCards.forEach(lightCard);
 			launch();
 		}
 	});
 }
 
-// Enter press to trigger generation
+function lightCard(card)
+{
+	card.description = undefined;
+	card.artist = undefined;
+	card.flavor = undefined;
+	card.text = undefined;
+	card.mechanics = undefined;
+	card.id = undefined;
+}
+
 $(document).ready(function() {
 
    $('#acronym').keypress(function(e){
@@ -61,19 +70,16 @@ $(document).ready(function() {
 
 });
 
-// Filters out heroes
 function filterHeroes(card)
 {
 	return card.type != "HERO";
 }
 
-// main()
 function launch()
 {
-	const wantedLanguage = $("#languageSelect").val();
+	var wantedLanguage = $("#languageSelect").val();
 	if(wantedLanguage != loadedLanguage)
 	{
-		// Cards for this lanuage not loaded
 		loadedLanguage = wantedLanguage;
 		loadCards(languageCorrespondance(wantedLanguage));
 	}
@@ -83,22 +89,26 @@ function launch()
 		if(acronym.length > 0)
 		{
 			var outerDiv = $("<div>");
+			var start = new Date().getTime();
+			var nbResults = 0;
 			for (var j = 0; j < selectedClasses.length + 1; j++){
 				processedClass =  j < selectedClasses.length ? selectedClasses[j] : "NEUTRAL";
 				var results = findDecks();
 				if(results.length > 0)
 				{
+					nbResults += results.length;
 					display(results, outerDiv);
 					lastResults.set(processedClass, results);
 				}
 			}
-			
+			var end = new Date().getTime();
+			var time = end - start;
+			outerDiv.prepend($("<p>").text(nbResults + " decks generated in " + time + "ms").addClass("timer"));
 			$("#results").html(outerDiv);
 		}
 	}
 }
 
-// Displays the results of findDecks()
 function display(results, outerDiv)
 {
 	const nbDecksFound = results.length;
@@ -115,7 +125,7 @@ function display(results, outerDiv)
 	container.append($("<ul>"));
 	for(var idx = 0; idx < chosenResults.length; idx++)
 	{
-		const result = chosenResults[idx];
+		var result = chosenResults[idx];
 		var deck = "[";
 		for(var i = 0; i < result.length; i++)
 		{
@@ -128,12 +138,10 @@ function display(results, outerDiv)
 	outerDiv.append($("<br>"));
 }
 
-// Callback function for click on reroll button
 function reroll(className)
 {
 	var decks = lastResults.get(className);
 	decks = chooseDecksToDisplay(decks);
-
 	var classDiv = $("#results"+className);
 	classDiv.empty();
 	classDiv.append($("<ul>"));
@@ -149,7 +157,6 @@ function reroll(className)
 	}
 }
 
-// Selects 30 random decks from given input
 function chooseDecksToDisplay(results)
 {
 	var result = [];
@@ -229,26 +236,14 @@ function maxManaCost(deck1, deck2)
 
 function getCost(card)
 {
-	var cost = 0;
-
-	if(card.rarity == "COMMON")
+	switch(card.rarity)
 	{
-		cost = 40;
+		case "COMMON": return 40;
+		case "RARE": return 100;
+		case "EPIC": return 400;
+		case "LEGENDARY": return 1600;
+		default: return 0;
 	}
-	else if(card.rarity == "RARE")
-	{
-		cost = 100;
-	}
-	else if(card.rarity == "EPIC")
-	{
-		cost = 400;
-	}
-	else if(card.rarity == "LEGENDARY")
-	{
-		cost = 1600;
-	}
-		
-	return cost;
 }
 
 function findDecks()
@@ -265,26 +260,26 @@ function findDecks()
 	return result;
 }
 
-// Recursive function to compute every possible combination
-function findAllCombinations(string, useableCards)
+function findAllCombinations(string, localUseable)
 {
 	var result = [];
+	//console.log("enter " + string + " " + localUseable.length); 
 	if(string.length > 0)
 	{
 		var letter = string[0];
-		var localUseable = useableCards.slice();
 		var previousSubCombinations = [];
 		var tested = false;
 		while(localUseable.length > 0)
 		{
 			var card = localUseable[0];
+			//console.log("study card " + card.name);
 			localUseable.shift();
 			
-			// Delete useless stored subCombinations
 			for(var idx = 0; idx < previousSubCombinations.length; ++idx)
 			{			
 				if(previousSubCombinations[idx].indexOf(card) != -1)
 				{
+					//console.log("removing from sub " + idx);
 					previousSubCombinations.splice(idx,1);
 					idx--;
 				}
@@ -296,7 +291,9 @@ function findAllCombinations(string, useableCards)
 				{
 					if(!tested)
 					{
-						previousSubCombinations = findAllCombinations(string.substring(1, string.length), localUseable);
+						var substring = string.substring(1, string.length);
+						var subUseable = (substring.indexOf(letter) == -1) ? localUseable.filter(function(card){ return card.name[0] != letter;} ) : localUseable.slice();
+						previousSubCombinations = findAllCombinations(substring, subUseable);
 						tested = true;
 					}
 					
@@ -309,16 +306,16 @@ function findAllCombinations(string, useableCards)
 				}
 				else
 				{
+					//console.log("feuille " + card.name);
 					result.push([card]);
 				}
 			}
 		}
 	}
-
+	//console.log("exit " + string);
 	return result;
 }
 
-// Filters out the cards that cannot be put in a deck of class processedClass
 function filterProcessedClass(obj)
 {
 	var result = false;
@@ -330,15 +327,12 @@ function filterProcessedClass(obj)
 		{
 			result = 
 				!('multiClassGroup' in obj)
-				|| ((obj.multiClassGroup == "JADE_LOTUS" && (processedClass == "DRUID" || processedClass == "ROGUE" || processedClass == "SHAMAN"))
-					|| (obj.multiClassGroup == "KABAL" && (processedClass == "MAGE" || processedClass == "PRIEST" || processedClass == "WARLOCK"))
-					|| (obj.multiClassGroup == "GRIMY_GOONS" && (processedClass == "WARRIOR" || processedClass == "HUNTER" || processedClass == "PALADIN")));
+				|| ('classes' in obj && obj.classes.indexOf(processedClass)!= -1);
 		}
 	}
 	return result && acronym.indexOf(obj.name[0]) != -1;
 }
 
-// Filters out decks with only neutral cards
 function filterNeutralDecks(deck)
 {
 	result = true;
@@ -350,7 +344,6 @@ function filterNeutralDecks(deck)
 	return !result;
 }
 
-// Sorts cards by the order in which they appear in a deck
 function sortByOrderInDeck(card1, card2)
 {
 	if(card1.cost < card2.cost)
@@ -360,12 +353,11 @@ function sortByOrderInDeck(card1, card2)
 	else
 	{
 		if(card1.name.toUpperCase() < card2.name.toUpperCase()) return -1;
-    else if(card1.name.toUpperCase() > card2.name.toUpperCase()) return 1;
-    else return 0;
+		else if(card1.name.toUpperCase() > card2.name.toUpperCase()) return 1;
+		else return 0;
 	}
 }
 
-// Makes the correspondance between 2 letters shortname and database name
 function languageCorrespondance(shortLanguage)
 {
 	switch(shortLanguage)
@@ -381,3 +373,5 @@ function languageCorrespondance(shortLanguage)
 		default: return "";
 	}
 }
+
+
