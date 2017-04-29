@@ -263,26 +263,20 @@ function findDecks()
 function findAllCombinations(string, localUseable)
 {
 	var result = [];
-	//console.log("enter " + string + " " + localUseable.length); 
 	if(string.length > 0)
 	{
 		var letter = string[0];
 		var previousSubCombinations = [];
 		var tested = false;
+		var substring = string.substring(1, string.length);
 		while(localUseable.length > 0)
 		{
 			var card = localUseable[0];
-			//console.log("study card " + card.name);
 			localUseable.shift();
 			
-			for(var idx = 0; idx < previousSubCombinations.length; ++idx)
-			{			
-				if(previousSubCombinations[idx].indexOf(card) != -1)
-				{
-					//console.log("removing from sub " + idx);
-					previousSubCombinations.splice(idx,1);
-					idx--;
-				}
+			if(substring.indexOf(card.name[0]) != -1)
+			{
+				previousSubCombinations = previousSubCombinations.filter(function(subCombination){return subCombination.indexOf(card) == -1});
 			}
 
 			if(card.name[0] == letter)
@@ -291,8 +285,7 @@ function findAllCombinations(string, localUseable)
 				{
 					if(!tested)
 					{
-						var substring = string.substring(1, string.length);
-						var subUseable = (substring.indexOf(letter) == -1) ? localUseable.filter(function(card){ return card.name[0] != letter;} ) : localUseable.slice();
+						var subUseable = (substring.indexOf(letter) == -1) ? localUseable.filter(function(card){ return card.name[0] != letter;} ) : localUseable.slice();						
 						previousSubCombinations = findAllCombinations(substring, subUseable);
 						tested = true;
 					}
@@ -306,13 +299,11 @@ function findAllCombinations(string, localUseable)
 				}
 				else
 				{
-					//console.log("feuille " + card.name);
 					result.push([card]);
 				}
 			}
 		}
 	}
-	//console.log("exit " + string);
 	return result;
 }
 
