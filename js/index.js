@@ -6,6 +6,7 @@ var acronym = "";
 var loadedLanguage = "EN";
 var lastResults = new Map();
 const nbDisplayedDecks = 30;
+var nbNeutralDecks = 0;
 
 function changeStatus(hero)
 {
@@ -21,7 +22,6 @@ function changeStatus(hero)
 		selectedClasses.push(className);
 		$("."+hero).css("opacity", 1.);
 	}
-	console.log("status changed");
 }
 
 $(window).load(function ()
@@ -90,28 +90,37 @@ function launch()
 		{
 			var outerDiv = $("<div>");
 			var start = new Date().getTime();
-			var nbResults = 0;
+			var totalNbResults = 0;
 			for (var j = 0; j < selectedClasses.length + 1; j++){
-				processedClass =  j < selectedClasses.length ? selectedClasses[j] : "NEUTRAL";
+				processedClass =  j == 0 ? "NEUTRAL" : selectedClasses[j-1];
 				var results = findDecks();
-				if(results.length > 0)
+				var nbResults = getNbDecks(results);
+				if(j == 0)
 				{
-					nbResults += results.length;
-					display(results, outerDiv);
+					nbNeutralDecks = nbResults; 
+				}
+				else
+				{
+					nbResults -= nbNeutralDecks;
+				}
+				
+				if(nbResults > 0)
+				{
+					totalNbResults += nbResults;
+					display(results, outerDiv, nbResults);
 					lastResults.set(processedClass, results);
 				}
 			}
 			var end = new Date().getTime();
 			var time = end - start;
-			outerDiv.prepend($("<p>").text(nbResults + " decks generated in " + time + "ms").addClass("timer"));
+			outerDiv.prepend($("<p>").text(totalNbResults + " decks generated in " + time + "ms").addClass("timer"));
 			$("#results").html(outerDiv);
 		}
 	}
 }
 
-function display(results, outerDiv)
+function display(results, outerDiv, nbDecksFound)
 {
-	const nbDecksFound = results.length;
 	var title = $("<p>").html(processedClass + " " + "(" + nbDecksFound + " deck" + (nbDecksFound > 1 ? "s"	: "") + ")   ");
 	title.append($("<button>").addClass("btn btn-default btn-sm dust").attr("type", "button").attr("onClick", "sort('"+processedClass+"', 'asc');").html("<img src='img/dustIcon.png' class='smallDust'/>"));
 	title.append($("<button>").addClass("btn btn-default btn-sm dust").attr("type", "button").attr("onClick", "sort('"+processedClass+"', 'desc');").html("<img src='img/dustIcon.png' class='largeDust'/>"));
@@ -119,7 +128,8 @@ function display(results, outerDiv)
 
 	if(nbDecksFound > nbDisplayedDecks) title.append($("<button>").addClass("btn btn-default btn-sm repeat").attr("type", "button").attr("onClick", "reroll('"+processedClass+"');").html("<span class='glyphicon glyphicon-repeat'></span>"));
 	outerDiv.append($("<h4>").html(title));
-	var chosenResults = chooseDecksToDisplay(results);
+	var nbDecks = getNbDecks(results);
+	var chosenResults = chooseRandomDecksToDisplay(results, nbDecks);
 
 	var container = $("<div>").addClass("container").attr("id", "results"+processedClass);
 	container.append($("<ul>"));
@@ -157,37 +167,82 @@ function reroll(className)
 	}
 }
 
-function chooseDecksToDisplay(results)
+function chooseRandomDecksToDisplay(results, nbDecksGenerated)
 {
-	var result = [];
-	if(results.length < nbDisplayedDecks) return results;
-	
-	if(results.length > 5 * nbDisplayedDecks)
+	var generatedResults = [];
+	if(processedClass == "NEUTRAL")
 	{
-		var chosenIndexes = [];
-		while(result.length < nbDisplayedDecks)
+		if(nbDecksGenerated > 5 * nbDisplayedDecks)
 		{
-			var chosenIdx = Math.floor(Math.random()*results.length);
-			if(chosenIndexes.indexOf(chosenIdx) == -1)
-			{
-				chosenIndexes.push(chosenIdx);
-				result.push(results[chosenIdx])
-			}
+			generatedResults = selectByRandomShoot(results, nbNeutralDecks, true);
+		}
+		else
+		{
+			generatedResults = selectByGeneration(results, nbNeutralDecks, true);
 		}
 	}
 	else
 	{
-		var possibleIndexes = new Array(results.length);
-		for(var i = 0; i < results.length; i++) possibleIndexes[i] = i;
-		
-		while(result.length < nbDisplayedDecks)
+		var nbDecksClass = nbDecksGenerated - nbNeutralDecks;
+		if(nbNeutralDecks == 0 || 2*nbDecksClass > nbNeutralDecks)
 		{
-			var chosenIdx = Math.floor(Math.random()*possibleIndexes.length);
-			result.push(results[possibleIndexes[chosenIdx]]);
-			possibleIndexes.splice(chosenIdx, 1);
+			generatedResults = selectByRandomShoot(results, nbDecksClass, false);
+		}
+		else if(nbDecksClass > 0)
+		{
+			generatedResults = selectByGeneration(results, nbDecksClass, false);
 		}
 	}
-	return result;
+	
+	return generatedResults;
+}
+
+function selectByRandomShoot(results, nbClassDecks, acceptNeutral)
+{
+	var chosenIndexes = [];
+	var generatedResults = [];
+	while(generatedResults.length < nbDisplayedDecks && generatedResults.length < nbClassDecks)
+	{
+		var subIdx = 0;
+		var indexesVector = [];
+		for(var i = 0; i < results.length; i++)
+		{
+			var chosenIdx = Math.floor(Math.random()*(results[i].length - subIdx)) + subIdx;
+			subIdx = results[i][chosenIdx].subIdx;
+			indexesVector.push(chosenIdx);
+		}
+		
+		if(chosenIndexes.indexOf(indexesVector) == -1)
+		{
+			chosenIndexes.push(indexesVector);
+			var deck = expandResult(results, indexesVector);
+			if(acceptNeutral || !isNeutral(deck))
+			{
+				generatedResults.push(deck);
+			}
+		}
+	}
+	
+	return generatedResults;
+}
+
+function selectByGeneration(results, nbClassDecks, acceptNeutral)
+{
+	var generatedResults = [];
+	var possibleIndexesVector = generateAllPossibleIndexesVector(results, 0, 0);
+	
+	while(generatedResults.length < nbDisplayedDecks && generatedResults.length < nbClassDecks && possibleIndexesVector.length > 0)
+	{
+		var chosenIdx = Math.floor(Math.random()*possibleIndexesVector.length);
+		var deck = expandResult(results, possibleIndexesVector[chosenIdx]);
+		if(acceptNeutral || !isNeutral(deck))
+		{
+			generatedResults.push(deck);
+		}
+		possibleIndexesVector.splice(chosenIdx, 1);
+	}
+	
+	return generatedResults;
 }
 
 function sort(className, order)
@@ -251,17 +306,13 @@ function findDecks()
 	var validCards = allCards.filter(filterProcessedClass).sort(sortByOrderInDeck);
 	
 	var result = findAllCombinations(acronym, validCards);
-	for(var idx in result)
-	{
-		result[idx].reverse();
-	}
-	if(processedClass != "NEUTRAL") result = result.filter(filterNeutralDecks);
-	
+
 	return result;
 }
 
 function findAllCombinations(string, localUseable)
 {
+	//console.log("enter " + string + " " + localUseable.length);
 	var result = [];
 	if(string.length > 0)
 	{
@@ -269,14 +320,17 @@ function findAllCombinations(string, localUseable)
 		var previousSubCombinations = [];
 		var tested = false;
 		var substring = string.substring(1, string.length);
-		while(localUseable.length > 0)
+		var idxFirstSub = 0;
+		var rowToAdd = [];
+		while(localUseable.length > 0 && (!tested || idxFirstSub < previousSubCombinations[0].length))
 		{
 			var card = localUseable[0];
 			localUseable.shift();
+			//console.log("studying " + card.name);
 			
-			if(substring.indexOf(card.name[0]) != -1)
+			if(previousSubCombinations.length > 0 && previousSubCombinations[0][idxFirstSub].card == card)
 			{
-				previousSubCombinations = previousSubCombinations.filter(function(subCombination){return subCombination.indexOf(card) == -1});
+				idxFirstSub++;
 			}
 
 			if(card.name[0] == letter)
@@ -289,21 +343,32 @@ function findAllCombinations(string, localUseable)
 						previousSubCombinations = findAllCombinations(substring, subUseable);
 						tested = true;
 					}
-					
-					for(var idx in previousSubCombinations)
+					//console.log("firstIndex " + idxFirstSub);
+					if(idxFirstSub < previousSubCombinations[0].length)
 					{
-						var local = previousSubCombinations[idx].slice();
-						local.push(card);
-						result.push(local);
+						var nbSubDecks = 0;
+						for(var i = idxFirstSub; i < previousSubCombinations[0].length; ++i)
+						{
+							nbSubDecks += previousSubCombinations[0][i].nbSubDecks;
+						}
+					
+						rowToAdd.push({card:card, subIdx:idxFirstSub, nbSubDecks:nbSubDecks});
 					}
 				}
 				else
 				{
-					result.push([card]);
+					//console.log("feuille " + card.name);
+					rowToAdd.push({card: card, subIdx: 0, nbSubDecks: 1});
 				}
 			}
 		}
+		
+		result.push(rowToAdd);
+		result = result.concat(previousSubCombinations);
+		//console.log("result");
+		//console.log(result);
 	}
+	//console.log("exit " + string);
 	return result;
 }
 
@@ -324,15 +389,15 @@ function filterProcessedClass(obj)
 	return result && acronym.indexOf(obj.name[0]) != -1;
 }
 
-function filterNeutralDecks(deck)
+function isNeutral(deck)
 {
-	result = true;
+	var result = true;
 	for(var idx = 0; idx < deck.length && result; idx++)
 	{
 		result = (deck[idx].cardClass == "NEUTRAL") && !('multiClassGroup' in deck[idx]);
 	}
 	
-	return !result;
+	return result;
 }
 
 function sortByOrderInDeck(card1, card2)
@@ -365,4 +430,73 @@ function languageCorrespondance(shortLanguage)
 	}
 }
 
+function getNbDecks(results)
+{
+	var result = 0;
+	
+	for(var idx in results[0])
+	{
+		result += results[0][idx].nbSubDecks;
+	}
+	
+	return result;
+}
 
+function expandAllResults(results, letterIdx, subIdx)
+{
+	var expandedResults = [];
+	for(var idx = subIdx; idx < results[letterIdx].length; ++idx)
+	{
+		if(letterIdx == results.length-1)
+		{
+			expandedResults.push([results[letterIdx][idx].card]);
+		}
+		else
+		{
+			var subResults = expandAllResults(results, letterIdx+1, results[letterIdx][idx].subIdx);
+			for(var subIdx2 in subResults)
+			{
+				var local = subResults[subIdx2].slice();
+				local.push(results[letterIdx][idx].card);
+				expandedResults.push(local);
+			}
+		}
+	}
+		
+	return expandedResults;
+}
+
+function expandResult(results, indexesVector)
+{
+	var result = [];
+	for(var i in results)
+	{
+		result.push(results[i][indexesVector[i]].card);
+	}
+		
+	return result;
+}
+
+function generateAllPossibleIndexesVector(results, letterIdx, subIdx)
+{
+	var expandedResults = [];
+	for(var idx = subIdx; idx < results[letterIdx].length; ++idx)
+	{
+		if(letterIdx == results.length-1)
+		{
+			expandedResults.push([idx]);
+		}
+		else
+		{
+			var subResults = generateAllPossibleIndexesVector(results, letterIdx+1, results[letterIdx][idx].subIdx);
+			for(var subIdx2 in subResults)
+			{
+				var local = subResults[subIdx2].slice();
+				local.unshift(idx);
+				expandedResults.push(local);
+			}
+		}
+	}
+	
+	return expandedResults
+}
