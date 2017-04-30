@@ -95,14 +95,7 @@ function launch()
 				processedClass =  j == 0 ? "NEUTRAL" : selectedClasses[j-1];
 				var results = findDecks();
 				var nbResults = getNbDecks(results);
-				if(j == 0)
-				{
-					nbNeutralDecks = nbResults; 
-				}
-				else
-				{
-					nbResults -= nbNeutralDecks;
-				}
+				(j == 0 ? nbNeutralDecks = nbResults : nbResults -= nbNeutralDecks);
 				
 				if(nbResults > 0)
 				{
@@ -150,8 +143,9 @@ function display(results, outerDiv, nbDecksFound)
 
 function reroll(className)
 {
+	processedClass = className;
 	var decks = lastResults.get(className);
-	decks = chooseDecksToDisplay(decks);
+	decks = chooseRandomDecksToDisplay(decks, getNbDecks(decks));
 	var classDiv = $("#results"+className);
 	classDiv.empty();
 	classDiv.append($("<ul>"));
@@ -184,7 +178,7 @@ function chooseRandomDecksToDisplay(results, nbDecksGenerated)
 	else
 	{
 		var nbDecksClass = nbDecksGenerated - nbNeutralDecks;
-		if(nbNeutralDecks == 0 || 2*nbDecksClass > nbNeutralDecks)
+		if(nbNeutralDecks == 0 || 100*nbDecksClass > nbNeutralDecks)
 		{
 			generatedResults = selectByRandomShoot(results, nbDecksClass, false);
 		}
@@ -442,7 +436,7 @@ function getNbDecks(results)
 	return result;
 }
 
-function expandAllResults(results, letterIdx, subIdx)
+function expandAllResults(results, letterIdx, subIdx, currentNbResults)
 {
 	var expandedResults = [];
 	for(var idx = subIdx; idx < results[letterIdx].length; ++idx)
