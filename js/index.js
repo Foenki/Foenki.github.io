@@ -241,14 +241,19 @@ function selectByGeneration(results, nbClassDecks, acceptNeutral)
 
 function sort(className, order)
 {
+	processedClass = className;
 	var decks = lastResults.get(className);
-	if(order == 'asc' || order == 'desc')
+	if(order == 'asc')
 	{
-		decks.sort(costLess);
+		decks = getFirstElements(decks, lowDustCost);
+	}	
+	else if(order == 'desc')
+	{
+		decks = getFirstElements(decks, highDustCost);
 	}
 	else
 	{
-		decks.sort(maxManaCost);
+		decks = getFirstElements(decks, maxManaCostDiff);
 	}
 	var classDiv = $("#results"+className);
 	classDiv.empty();
@@ -265,22 +270,55 @@ function sort(className, order)
 	}
 }
 
-function costLess(deck1, deck2)
+function getFirstElements(results, costFunction)
 {
-	var costDeck1 = 0;
-	var costDeck2 = 0;
-	for(var i = 0; i < deck1.length; ++i)
+	var firstElements = [];
+	var possibleIndexesVector = generateAllPossibleIndexesVector(results, 0, 0);
+	
+	for(var i in possibleIndexesVector)
 	{
-		costDeck1 += getCost(deck1[i]);
-		costDeck2 += getCost(deck2[i]);
+		if(processedClass == "NEUTRAL" || !isNeutralVector(results, possibleIndexesVector[i]))
+		{
+			var deckCost = costFunction(results, possibleIndexesVector[i]);
+			var insertionIdx = firstElements.length-1;
+			for( ; insertionIdx >= 0 && deckCost > firstElements[insertionIdx].cost; insertionIdx--);
+			
+			if(insertionIdx+1 < firstElements.length || firstElements.length < nbDisplayedDecks)
+			{
+				var newArray = firstElements.slice(0, insertionIdx+1);
+				newArray.push({deck:expandResult(results, possibleIndexesVector[i]), cost:deckCost});
+				firstElements = newArray.concat(firstElements.slice(insertionIdx+2, firstElements.length-1));
+			}
+		}
 	}
 	
-	return costDeck1 - costDeck2;
+	var decks = [];
+	for(var i in firstElements)
+	{
+		decks[i] = firstElements[i].deck;
+	}
+	return decks;
 }
 
-function maxManaCost(deck1, deck2)
+function highDustCost(results, indexVector)
 {
-	return (deck1[deck1.length-1].cost - deck1[0].cost) - (deck2[deck2.length-1].cost - deck2[0].cost);
+	var cost = 0;
+	for(var i in results)
+	{
+		cost += getCost(results[i][indexVector[i]].card);
+	}
+	
+	return cost;
+}
+
+function lowDustCost(results, indexVector)
+{
+	return -highDustCost(results, indexVector);
+}
+
+function maxManaCostDiff(results, indexVector)
+{
+	return -(results[results.length-1][indexVector[results.length-1]].cost - results[0][indexVector[0]]);
 }
 
 function getCost(card)
@@ -389,6 +427,17 @@ function isNeutral(deck)
 	for(var idx = 0; idx < deck.length && result; idx++)
 	{
 		result = (deck[idx].cardClass == "NEUTRAL") && !('multiClassGroup' in deck[idx]);
+	}
+	
+	return result;
+}
+
+function isNeutralVector(results, indexesVector)
+{
+	var result = true;
+	for(var i = 0; i < results.length && result; i++)
+	{
+		result = (results[i][indexesVector[i]].cardClass == "NEUTRAL") && !('multiClassGroup' in results[i][indexesVector[i]]);
 	}
 	
 	return result;
