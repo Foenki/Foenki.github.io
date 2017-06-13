@@ -7,6 +7,8 @@ var loadedLanguage = "EN";
 var lastResults = new Map();
 const nbDisplayedDecks = 30;
 var nbNeutralDecks = 0;
+var Format = {WILD : {name : "Wild"} , STANDARD : {name : "Standard"}};
+var currentFormat = Format.WILD;
 
 function changeStatus(hero)
 {
@@ -24,6 +26,20 @@ function changeStatus(hero)
 	}
 }
 
+function changeFormat()
+{
+    if(currentFormat == Format.STANDARD)
+    {
+        currentFormat = Format.WILD;
+        $("#format").attr("src", "img/wild.png");
+    }
+    else
+    {
+        currentFormat = Format.STANDARD;        
+        $("#format").attr("src", "img/standard.png");
+    }    
+}
+
 $(window).load(function ()
 {
 	$.ajax({
@@ -32,6 +48,10 @@ $(window).load(function ()
 		data: "",
 		success: function(json) {
 			allCards = json.filter(filterHeroes);
+			if(currentFormat == Format.STANDARD)
+			{
+				allCards = allCards.filter(filterStandard);
+			}
 			allCards.forEach(lightCard);
 		}
 	});
@@ -45,6 +65,10 @@ function loadCards(language)
 		data: "",
 		success: function(json) {
 			allCards = json.filter(filterHeroes);
+			if(currentFormat == Format.STANDARD)
+			{
+				allCards = allCards.filter(filterStandard);
+			}
 			allCards.forEach(lightCard);
 			launch();
 		}
@@ -73,6 +97,16 @@ $(document).ready(function() {
 function filterHeroes(card)
 {
 	return card.type != "HERO";
+}
+
+function filterStandard(card)
+{
+	return card.set == "CORE" 
+	|| card.set == "EXPERT1" 
+	|| card.set == "OG" 
+	|| card.set == "KARA" 
+	|| card.set == "GANGS"
+	|| card.set == "UNGORO";
 }
 
 function launch()
@@ -339,6 +373,10 @@ function getCost(card)
 function findDecks()
 {
 	var validCards = allCards.filter(filterProcessedClass).sort(sortByOrderInDeck);
+	if(currentFormat == Format.STANDARD)
+	{
+		validCards = validCards.filter(filterStandard);
+	}
 	
 	var result = findAllCombinations(acronym, validCards);
 
