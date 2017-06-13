@@ -164,6 +164,10 @@ function reroll(className)
 function chooseRandomDecksToDisplay(results, nbDecksGenerated)
 {
 	var generatedResults = [];
+	var nbDecksClass = nbDecksGenerated - (processedClass == "NEUTRAL" ? 0 : nbNeutralDecks);
+	
+	if(nbDecksClass < nbDisplayedDecks) return expandAllResults(results, 0, 0, 0).filter(e => !(processedClass != "NEUTRAL" && isNeutral(e)));
+	
 	if(processedClass == "NEUTRAL")
 	{
 		if(nbDecksGenerated > 5 * nbDisplayedDecks)
@@ -177,7 +181,6 @@ function chooseRandomDecksToDisplay(results, nbDecksGenerated)
 	}
 	else
 	{
-		var nbDecksClass = nbDecksGenerated - nbNeutralDecks;
 		if(nbNeutralDecks == 0 || 100*nbDecksClass > nbNeutralDecks)
 		{
 			generatedResults = selectByRandomShoot(results, nbDecksClass, false);
