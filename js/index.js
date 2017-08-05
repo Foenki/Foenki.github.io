@@ -135,8 +135,8 @@ function launch()
 				{
 					totalNbResults += nbResults;
 					display(results, outerDiv, nbResults);
-					lastResults.set(processedClass, results);
 				}
+				lastResults.set(processedClass, results);
 			}
 			var end = new Date().getTime();
 			var time = end - start;
@@ -200,7 +200,15 @@ function chooseRandomDecksToDisplay(results, nbDecksGenerated)
 	var generatedResults = [];
 	var nbDecksClass = nbDecksGenerated - (processedClass == "NEUTRAL" ? 0 : nbNeutralDecks);
 	
-	if(nbDecksClass < nbDisplayedDecks) return expandAllResults(results, 0, 0, 0).filter(e => !(processedClass != "NEUTRAL" && isNeutral(e)));
+	if(nbDecksClass < nbDisplayedDecks)
+	{
+		var result = expandAllResults(results, 0, 0, 0).filter(e => !(processedClass != "NEUTRAL" && isNeutral(e)));
+		for(var i in result)
+		{
+			result[i].reverse();
+		}
+		return result;
+	}
 	
 	if(processedClass == "NEUTRAL")
 	{
@@ -324,7 +332,7 @@ function getFirstElements(results, costFunction)
 			{
 				var newArray = firstElements.slice(0, insertionIdx+1);
 				newArray.push({deck:expandResult(results, possibleIndexesVector[i]), cost:deckCost});
-				firstElements = newArray.concat(firstElements.slice(insertionIdx+2, firstElements.length-1));
+				firstElements = newArray.concat(firstElements.slice(insertionIdx+1, firstElements.length));
 			}
 		}
 	}
@@ -478,7 +486,7 @@ function isNeutralVector(results, indexesVector)
 	var result = true;
 	for(var i = 0; i < results.length && result; i++)
 	{
-		result = (results[i][indexesVector[i]].cardClass == "NEUTRAL") && !('multiClassGroup' in results[i][indexesVector[i]]);
+		result = (results[i][indexesVector[i]].card.cardClass == "NEUTRAL") && !('multiClassGroup' in results[i][indexesVector[i]].card);
 	}
 	
 	return result;
