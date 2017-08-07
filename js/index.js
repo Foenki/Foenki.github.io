@@ -200,9 +200,12 @@ function chooseRandomDecksToDisplay(results, nbDecksGenerated)
 	var generatedResults = [];
 	var nbDecksClass = nbDecksGenerated - (processedClass == "NEUTRAL" ? 0 : nbNeutralDecks);
 	
-	if(nbDecksClass < nbDisplayedDecks) return expandAllResults(results, 0, 0, 0).filter(e => !(processedClass != "NEUTRAL" && isNeutral(e)));
-	
-	if(processedClass == "NEUTRAL")
+	if(nbDecksClass < nbDisplayedDecks)
+	{
+		generatedResults = expandAllResults(results, 0, 0, 0).filter(e => !(processedClass != "NEUTRAL" && isNeutral(e)));
+		generatedResults.reverse();
+	}
+	else if(processedClass == "NEUTRAL")
 	{
 		if(nbDecksGenerated > 5 * nbDisplayedDecks)
 		{
