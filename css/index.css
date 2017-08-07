@@ -80,7 +80,18 @@
 	color:#F07000;
 }
 
-.repeat, .dust
+.mana
+{
+	padding-left:7px;
+}
+
+.repeat
+{
+	padding-left:9px;
+	padding-top:6px;
+}
+
+.repeat, .dust, .mana
 {
 	height:30px;
 	width:35px;
@@ -105,4 +116,9 @@
 	float:right;
 	color:black;
 	font-style:oblique;
+}
+
+span.glyphicon-repeat 
+{
+    font-size: 1.2em;
 }
