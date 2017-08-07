@@ -330,7 +330,7 @@ function getFirstElements(results, costFunction)
 			{
 				var newArray = firstElements.slice(0, insertionIdx+1);
 				newArray.push({deck:expandResult(results, possibleIndexesVector[i]), cost:deckCost});
-				firstElements = newArray.concat(firstElements.slice(insertionIdx+1, firstElements.length-1));
+				firstElements = newArray.concat(firstElements.slice(insertionIdx+1, firstElements.length == nbDisplayedDecks ? firstElements.length-1 : firstElements.length));
 			}
 		}
 	}
