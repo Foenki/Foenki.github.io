@@ -324,7 +324,7 @@ function getFirstElements(results, costFunction)
 			{
 				var newArray = firstElements.slice(0, insertionIdx+1);
 				newArray.push({deck:expandResult(results, possibleIndexesVector[i]), cost:deckCost});
-				firstElements = newArray.concat(firstElements.slice(insertionIdx+2, firstElements.length-1));
+				firstElements = newArray.concat(firstElements.slice(insertionIdx+1, firstElements.length));
 			}
 		}
 	}
@@ -478,7 +478,7 @@ function isNeutralVector(results, indexesVector)
 	var result = true;
 	for(var i = 0; i < results.length && result; i++)
 	{
-		result = (results[i][indexesVector[i]].cardClass == "NEUTRAL") && !('multiClassGroup' in results[i][indexesVector[i]]);
+		result = (results[i][indexesVector[i]].card.cardClass == "NEUTRAL") && !('multiClassGroup' in results[i][indexesVector[i]].card);
 	}
 	
 	return result;
