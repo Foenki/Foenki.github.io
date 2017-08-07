@@ -203,7 +203,10 @@ function chooseRandomDecksToDisplay(results, nbDecksGenerated)
 	if(nbDecksClass < nbDisplayedDecks)
 	{
 		generatedResults = expandAllResults(results, 0, 0, 0).filter(e => !(processedClass != "NEUTRAL" && isNeutral(e)));
-		generatedResults.reverse();
+		for(var result in generatedResults)
+		{
+			generatedResults[result].reverse();
+		}
 	}
 	else if(processedClass == "NEUTRAL")
 	{
