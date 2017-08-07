@@ -303,7 +303,7 @@ function sort(className, order)
 	classDiv.append($("<ul>"));
 	for(var i = 0; i < nbDisplayedDecks && i < decks.length; ++i)
 	{
-		var deck = order == 'desc' ? decks[decks.length - i - 1] : decks[i];
+		var deck = decks[i];
 		var html = "[";
 		for(var j = 0; j < deck.length; j++)
 		{
@@ -318,7 +318,7 @@ function getFirstElements(results, costFunction)
 	var firstElements = [];
 	var possibleIndexesVector = generateAllPossibleIndexesVector(results, 0, 0);
 	
-	for(var i in possibleIndexesVector)
+	for(var i = 0; i < possibleIndexesVector.length && (i < 100000 || firstElements.length < nbDisplayedDecks); ++i)
 	{
 		if(processedClass == "NEUTRAL" || !isNeutralVector(results, possibleIndexesVector[i]))
 		{
@@ -330,7 +330,7 @@ function getFirstElements(results, costFunction)
 			{
 				var newArray = firstElements.slice(0, insertionIdx+1);
 				newArray.push({deck:expandResult(results, possibleIndexesVector[i]), cost:deckCost});
-				firstElements = newArray.concat(firstElements.slice(insertionIdx+1, firstElements.length));
+				firstElements = newArray.concat(firstElements.slice(insertionIdx+1, firstElements.length-1));
 			}
 		}
 	}
@@ -361,7 +361,7 @@ function lowDustCost(results, indexVector)
 
 function maxManaCostDiff(results, indexVector)
 {
-	return -(results[results.length-1][indexVector[results.length-1]].cost - results[0][indexVector[0]]);
+	return -(results[results.length-1][indexVector[results.length-1]].card.cost - results[0][indexVector[0]].card.cost);
 }
 
 function getCost(card)
