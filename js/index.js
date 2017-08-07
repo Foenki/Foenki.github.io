@@ -151,9 +151,9 @@ function display(results, outerDiv, nbDecksFound)
 	var title = $("<p>").html(processedClass + " " + "(" + nbDecksFound + " deck" + (nbDecksFound > 1 ? "s"	: "") + ")   ");
 	title.append($("<button>").addClass("btn btn-default btn-sm dust").attr("type", "button").attr("onClick", "sort('"+processedClass+"', 'asc');").html("<img src='img/dustIcon.png' class='smallDust'/>"));
 	title.append($("<button>").addClass("btn btn-default btn-sm dust").attr("type", "button").attr("onClick", "sort('"+processedClass+"', 'desc');").html("<img src='img/dustIcon.png' class='largeDust'/>"));
-	title.append($("<button>").addClass("btn btn-default btn-sm dust").attr("type", "button").attr("onClick", "sort('"+processedClass+"', 'mana');").html("<img src='img/manaIcon.png' class='largeDust'/>"));
+	title.append($("<button>").addClass("btn btn-default btn-sm mana").attr("type", "button").attr("onClick", "sort('"+processedClass+"', 'mana');").html("<img src='img/manaIcon.png' class='largeDust'/>"));
 
-	if(nbDecksFound > nbDisplayedDecks) title.append($("<button>").addClass("btn btn-default btn-sm repeat").attr("type", "button").attr("onClick", "reroll('"+processedClass+"');").html("<span class='glyphicon glyphicon-repeat'></span>"));
+	if(nbDecksFound > nbDisplayedDecks) title.append($("<button>").addClass("btn btn-default btn-sm repeat").attr("type", "button").attr("onClick", "reroll('"+processedClass+"');").html("<span class='glyphicon glyphicon-repeat'/>"));
 	outerDiv.append($("<h4>").html(title));
 	var nbDecks = getNbDecks(results);
 	var chosenResults = chooseRandomDecksToDisplay(results, nbDecks);
