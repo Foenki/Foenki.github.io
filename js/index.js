@@ -1,4 +1,5 @@
 const classes = ['DRUID', 'HUNTER', 'MAGE', 'PALADIN', 'PRIEST', 'ROGUE', 'SHAMAN', 'WARLOCK', 'WARRIOR'];
+const herosIdx = [274, 31, 637, 671, 813, 930, 1066, 893, 7];
 var proccessedClass;
 var allCards = [];
 var selectedClasses = classes;
@@ -163,14 +164,18 @@ function display(results, outerDiv, nbDecksFound)
 	container.append($("<ul>"));
 	for(var idx = 0; idx < chosenResults.length; idx++)
 	{
+		var row = $("<li>");
 		var result = chosenResults[idx];
-		console.log(getDeckstring(result));
+		
+		row.append(getDeckstringCopySpan(result));
+		
 		var deck = "[";
 		for(var i = 0; i < result.length; i++)
 		{
 			deck += '<b class="'+result[i].rarity.toLowerCase()+'">' + result[i].name[0] + "</b>" + result[i].name.substring(1,result[i].name.length) + (i == result.length - 1 ? "]" : ", ");
 		}
-		container.append($("<li>").html(deck));
+		row.append($("<p>").html(deck));
+		container.append(row);
 	}
 	
 	outerDiv.append(container);
@@ -481,6 +486,69 @@ function isNeutral(deck)
 	return result;
 }
 
+function getDeckstringCopySpan(deck)
+{
+	var result = $("<button>").addClass("btn btn-default btn-sm copy").attr("type", "button").html("<span class='glyphicon glyphicon-copy'/>");
+	result.click(function(){ copyTextToClipboard(getDeckstring(deck)); });
+	return result;
+}
+
+function copyTextToClipboard(text) {
+  var textArea = document.createElement("textarea");
+  console.log(text);
+  //
+  // *** This styling is an extra step which is likely not required. ***
+  //
+  // Why is it here? To ensure:
+  // 1. the element is able to have focus and selection.
+  // 2. if element was to flash render it has minimal visual impact.
+  // 3. less flakyness with selection and copying which **might** occur if
+  //    the textarea element is not visible.
+  //
+  // The likelihood is the element won't even render, not even a flash,
+  // so some of these are just precautions. However in IE the element
+  // is visible whilst the popup box asking the user for permission for
+  // the web page to copy to the clipboard.
+  //
+
+  // Place in top-left corner of screen regardless of scroll position.
+  textArea.style.position = 'fixed';
+  textArea.style.top = 0;
+  textArea.style.left = 0;
+
+  // Ensure it has a small width and height. Setting to 1px / 1em
+  // doesn't work as this gives a negative w/h on some browsers.
+  textArea.style.width = '2em';
+  textArea.style.height = '2em';
+
+  // We don't need padding, reducing the size if it does flash render.
+  textArea.style.padding = 0;
+
+  // Clean up any borders.
+  textArea.style.border = 'none';
+  textArea.style.outline = 'none';
+  textArea.style.boxShadow = 'none';
+
+  // Avoid flash of white box if rendered for any reason.
+  textArea.style.background = 'transparent';
+
+
+  textArea.value = text;
+
+  document.body.appendChild(textArea);
+
+  textArea.select();
+
+  try {
+    var successful = document.execCommand('copy');
+  }
+	catch (err) {
+		
+	}
+
+  document.body.removeChild(textArea);
+}
+
 function getDeckstring(deck)
 {
 	var cards = [];
@@ -490,12 +558,12 @@ function getDeckstring(deck)
 		cards.push([deck[cardIdx].dbfId, 1]);
 	}
 	
-	var heroIdx = classes.indexOf(processedClass) + 1;
-	if(heroIdx == 0) heroIdx = 3;
+	var heroIdx = classes.indexOf(processedClass);
+	heroIdx = (heroIdx == -1) ? herosIdx[2] : herosIdx[heroIdx];
 	
 	const formattedDeck = {
 		cards: cards, // [dbfid, count] pairs
-		heroes: [heroIdx], // Garrosh Hellscream
+		heroes: [heroIdx],
 		format: currentFormat.index, // 1 for Wild, 2 for Standard
 	};
 
