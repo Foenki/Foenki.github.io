@@ -1,6 +1,8 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', { value: true });
+(function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
+	typeof define === 'function' && define.amd ? define(['exports'], factory) :
+	(factory((global.deckstrings = {})));
+}(this, (function (exports) { 'use strict';
 
 var encode_1 = encode$1;
 
@@ -90,36 +92,6 @@ var index = {
   , encodingLength: length
 };
 
-function atob(str) {
-  return new Buffer(str, 'base64').toString('binary');
-}
-
-var nodeAtob = atob.atob = atob;
-
-function createCommonjsModule(fn, module) {
-	return module = { exports: {} }, fn(module, module.exports), module.exports;
-}
-
-var index$1 = createCommonjsModule(function (module) {
-(function () {
-  "use strict";
-
-  function btoa(str) {
-    var buffer;
-
-    if (str instanceof Buffer) {
-      buffer = str;
-    } else {
-      buffer = new Buffer(str.toString(), 'binary');
-    }
-
-    return buffer.toString('base64');
-  }
-
-  module.exports = btoa;
-}());
-});
-
 function __extends(d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -155,7 +127,7 @@ var BufferWriter = (function (_super) {
     };
     BufferWriter.prototype.toString = function () {
         var buffer = String.fromCharCode.apply(String, this.buffer);
-        return index$1(buffer);
+        return btoa(buffer);
     };
     return BufferWriter;
 }(Iterator));
@@ -164,7 +136,7 @@ var BufferReader = (function (_super) {
     __extends(BufferReader, _super);
     function BufferReader(string) {
         var _this = _super.call(this) || this;
-        var binary = nodeAtob(string);
+        var binary = atob(string);
         var buffer = new Uint8Array(binary.length);
         for (var i = 0; i < binary.length; i++) {
             buffer[i] = binary.charCodeAt(i);
@@ -297,3 +269,7 @@ function decode(deckstring) {
 
 exports.encode = encode;
 exports.decode = decode;
+
+Object.defineProperty(exports, '__esModule', { value: true });
+
+})));
