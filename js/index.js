@@ -106,7 +106,8 @@ function filterStandard(card)
 	|| card.set == "OG" 
 	|| card.set == "KARA" 
 	|| card.set == "GANGS"
-	|| card.set == "UNGORO";
+	|| card.set == "UNGORO"
+	|| card.set == "ICECROWN";
 }
 
 function launch()
@@ -135,8 +136,8 @@ function launch()
 				{
 					totalNbResults += nbResults;
 					display(results, outerDiv, nbResults);
+					lastResults.set(processedClass, results);
 				}
-				lastResults.set(processedClass, results);
 			}
 			var end = new Date().getTime();
 			var time = end - start;
@@ -151,9 +152,9 @@ function display(results, outerDiv, nbDecksFound)
 	var title = $("<p>").html(processedClass + " " + "(" + nbDecksFound + " deck" + (nbDecksFound > 1 ? "s"	: "") + ")   ");
 	title.append($("<button>").addClass("btn btn-default btn-sm dust").attr("type", "button").attr("onClick", "sort('"+processedClass+"', 'asc');").html("<img src='img/dustIcon.png' class='smallDust'/>"));
 	title.append($("<button>").addClass("btn btn-default btn-sm dust").attr("type", "button").attr("onClick", "sort('"+processedClass+"', 'desc');").html("<img src='img/dustIcon.png' class='largeDust'/>"));
-	title.append($("<button>").addClass("btn btn-default btn-sm dust").attr("type", "button").attr("onClick", "sort('"+processedClass+"', 'mana');").html("<img src='img/manaIcon.png' class='largeDust'/>"));
+	title.append($("<button>").addClass("btn btn-default btn-sm mana").attr("type", "button").attr("onClick", "sort('"+processedClass+"', 'mana');").html("<img src='img/manaIcon.png' class='largeDust'/>"));
 
-	if(nbDecksFound > nbDisplayedDecks) title.append($("<button>").addClass("btn btn-default btn-sm repeat").attr("type", "button").attr("onClick", "reroll('"+processedClass+"');").html("<span class='glyphicon glyphicon-repeat'></span>"));
+	if(nbDecksFound > nbDisplayedDecks) title.append($("<button>").addClass("btn btn-default btn-sm repeat").attr("type", "button").attr("onClick", "reroll('"+processedClass+"');").html("<span class='glyphicon glyphicon-repeat'/>"));
 	outerDiv.append($("<h4>").html(title));
 	var nbDecks = getNbDecks(results);
 	var chosenResults = chooseRandomDecksToDisplay(results, nbDecks);
@@ -202,15 +203,13 @@ function chooseRandomDecksToDisplay(results, nbDecksGenerated)
 	
 	if(nbDecksClass < nbDisplayedDecks)
 	{
-		var result = expandAllResults(results, 0, 0, 0).filter(e => !(processedClass != "NEUTRAL" && isNeutral(e)));
-		for(var i in result)
+		generatedResults = expandAllResults(results, 0, 0, 0).filter(e => !(processedClass != "NEUTRAL" && isNeutral(e)));
+		for(var result in generatedResults)
 		{
-			result[i].reverse();
+			generatedResults[result].reverse();
 		}
-		return result;
 	}
-	
-	if(processedClass == "NEUTRAL")
+	else if(processedClass == "NEUTRAL")
 	{
 		if(nbDecksGenerated > 5 * nbDisplayedDecks)
 		{
@@ -305,7 +304,7 @@ function sort(className, order)
 	classDiv.append($("<ul>"));
 	for(var i = 0; i < nbDisplayedDecks && i < decks.length; ++i)
 	{
-		var deck = order == 'desc' ? decks[decks.length - i - 1] : decks[i];
+		var deck = decks[i];
 		var html = "[";
 		for(var j = 0; j < deck.length; j++)
 		{
@@ -320,7 +319,7 @@ function getFirstElements(results, costFunction)
 	var firstElements = [];
 	var possibleIndexesVector = generateAllPossibleIndexesVector(results, 0, 0);
 	
-	for(var i in possibleIndexesVector)
+	for(var i = 0; i < possibleIndexesVector.length && (i < 100000 || firstElements.length < nbDisplayedDecks); ++i)
 	{
 		if(processedClass == "NEUTRAL" || !isNeutralVector(results, possibleIndexesVector[i]))
 		{
@@ -332,7 +331,7 @@ function getFirstElements(results, costFunction)
 			{
 				var newArray = firstElements.slice(0, insertionIdx+1);
 				newArray.push({deck:expandResult(results, possibleIndexesVector[i]), cost:deckCost});
-				firstElements = newArray.concat(firstElements.slice(insertionIdx+1, firstElements.length));
+				firstElements = newArray.concat(firstElements.slice(insertionIdx+1, firstElements.length == nbDisplayedDecks ? firstElements.length-1 : firstElements.length));
 			}
 		}
 	}
@@ -363,7 +362,7 @@ function lowDustCost(results, indexVector)
 
 function maxManaCostDiff(results, indexVector)
 {
-	return -(results[results.length-1][indexVector[results.length-1]].cost - results[0][indexVector[0]]);
+	return -(results[results.length-1][indexVector[results.length-1]].card.cost - results[0][indexVector[0]].card.cost);
 }
 
 function getCost(card)
