@@ -7,7 +7,7 @@ var loadedLanguage = "EN";
 var lastResults = new Map();
 const nbDisplayedDecks = 30;
 var nbNeutralDecks = 0;
-var Format = {WILD : {name : "Wild"} , STANDARD : {name : "Standard"}};
+var Format = {WILD : {name : "Wild", index : 1} , STANDARD : {name : "Standard", index : 2}};
 var currentFormat = Format.WILD;
 
 function changeStatus(hero)
@@ -112,15 +112,6 @@ function filterStandard(card)
 
 function launch()
 {
-	const deck = {
-		cards: [[1, 3], [2, 3], [3, 3], [4, 3]], // [dbfid, count] pairs
-		heroes: [7], // Garrosh Hellscream
-		format: 1, // 1 for Wild, 2 for Standard
-	};
-
-	const deckstring = encode(deck);
-	console.log(deckstring); // AAEBAQcAAAQBAwIDAwMEAw==
-	
 	var wantedLanguage = $("#languageSelect").val();
 	if(wantedLanguage != loadedLanguage)
 	{
@@ -173,6 +164,7 @@ function display(results, outerDiv, nbDecksFound)
 	for(var idx = 0; idx < chosenResults.length; idx++)
 	{
 		var result = chosenResults[idx];
+		console.log(getDeckstring(result));
 		var deck = "[";
 		for(var i = 0; i < result.length; i++)
 		{
@@ -487,6 +479,27 @@ function isNeutral(deck)
 	}
 	
 	return result;
+}
+
+function getDeckstring(deck)
+{
+	var cards = [];
+	
+	for(var cardIdx in deck)
+	{
+		cards.push([deck[cardIdx].dbfId, 1]);
+	}
+	
+	var heroIdx = classes.indexOf(processedClass) + 1;
+	if(heroIdx == 0) heroIdx = 3;
+	
+	const formattedDeck = {
+		cards: cards, // [dbfid, count] pairs
+		heroes: [heroIdx], // Garrosh Hellscream
+		format: currentFormat.index, // 1 for Wild, 2 for Standard
+	};
+
+	return encode(formattedDeck);
 }
 
 function isNeutralVector(results, indexesVector)
