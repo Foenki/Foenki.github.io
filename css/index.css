@@ -91,7 +91,18 @@
 	padding-top:6px;
 }
 
-.repeat, .dust, .mana, .copy
+.copy
+{
+	padding-left:3px;
+	padding-top:3px;
+	height:25px;
+	width:25px;
+	margin-right:5px;
+	margin-top:1px;
+	margin-bottom:1px;
+}
+
+.repeat, .dust, .mana
 {
 	height:30px;
 	width:35px;
@@ -118,7 +129,17 @@
 	font-style:oblique;
 }
 
-span.glyphicon-repeat, span.glyphicon-copy
+span.glyphicon-copy
 {
-    font-size: 1.4em;
+    font-size:1.4em;
+}
+
+span.glyphicon-repeat
+{
+    font-size:1.3em;
+}
+
+li
+{
+	list-style-type:none;
 }
