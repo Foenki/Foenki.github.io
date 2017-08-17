@@ -538,7 +538,8 @@ function getDeckstring(deck, deckClass)
 		format: currentFormat.index, // 1 for Wild, 2 for Standard
 	};
 
-	return encode(formattedDeck);
+	var result = "### " + acronym + "\n" + encode(formattedDeck);
+	return result;
 }
 
 function isNeutralVector(results, indexesVector)
