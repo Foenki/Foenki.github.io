@@ -97,7 +97,7 @@ $(document).ready(function() {
 
 function filterHeroes(card)
 {
-	return card.type != "HERO";
+	return card.hasOwnProperty("cost");
 }
 
 function filterStandard(card)
@@ -537,9 +537,8 @@ function getDeckstring(deck, deckClass)
 		heroes: [heroIdx],
 		format: currentFormat.index, // 1 for Wild, 2 for Standard
 	};
-
-	var result = "### " + acronym + "\n" + encode(formattedDeck);
-	return result;
+	
+	return encode(formattedDeck);
 }
 
 function isNeutralVector(results, indexesVector)
