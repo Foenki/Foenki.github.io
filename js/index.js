@@ -1,5 +1,5 @@
 const classes = ['DRUID', 'HUNTER', 'MAGE', 'PALADIN', 'PRIEST', 'ROGUE', 'SHAMAN', 'WARLOCK', 'WARRIOR'];
-const herosIdx = [274, 31, 637, 671, 813, 930, 1066, 893, 7];
+const heroesIdx = [274, 31, 637, 671, 813, 930, 1066, 893, 7];
 var proccessedClass;
 var allCards = [];
 var selectedClasses = classes;
@@ -161,23 +161,7 @@ function display(results, outerDiv, nbDecksFound)
 	var chosenResults = chooseRandomDecksToDisplay(results, nbDecks);
 
 	var container = $("<div>").addClass("container").attr("id", "results"+processedClass);
-	container.append($("<ul>"));
-	for(var idx = 0; idx < chosenResults.length; idx++)
-	{
-		var row = $("<li>");
-		var result = chosenResults[idx];
-		
-		row.append(getDeckstringCopySpan(result));
-		
-		var deck = "[";
-		for(var i = 0; i < result.length; i++)
-		{
-			deck += '<b class="'+result[i].rarity.toLowerCase()+'">' + result[i].name[0] + "</b>" + result[i].name.substring(1,result[i].name.length) + (i == result.length - 1 ? "]" : ", ");
-		}
-		row.append($("<p>").html(deck));
-		container.append(row);
-	}
-	
+	displayDecks(container, chosenResults);
 	outerDiv.append(container);
 	outerDiv.append($("<br>"));
 }
@@ -189,17 +173,7 @@ function reroll(className)
 	decks = chooseRandomDecksToDisplay(decks, getNbDecks(decks));
 	var classDiv = $("#results"+className);
 	classDiv.empty();
-	classDiv.append($("<ul>"));
-	for(var i = 0; i < decks.length; ++i)
-	{
-		var deck = decks[i];
-		var html = "[";
-		for(var j = 0; j < deck.length; j++)
-		{
-			html += '<b class="'+ deck[j].rarity.toLowerCase()+'">' + deck[j].name[0] + "</b>" + deck[j].name.substring(1,deck[j].name.length) + (j == deck.length - 1 ? "]" : ", ");
-		}
-		classDiv.append($("<li>").html(html));		
-	}
+	displayDecks(classDiv, decks);
 }
 
 function chooseRandomDecksToDisplay(results, nbDecksGenerated)
@@ -307,16 +281,26 @@ function sort(className, order)
 	}
 	var classDiv = $("#results"+className);
 	classDiv.empty();
-	classDiv.append($("<ul>"));
-	for(var i = 0; i < nbDisplayedDecks && i < decks.length; ++i)
+	displayDecks(classDiv, decks);
+}
+
+function displayDecks(parentBlock, decks)
+{
+	parentBlock.append($("<ul>"));
+	for(var i = 0; i < decks.length; ++i)
 	{
+		var row = $("<li>");
 		var deck = decks[i];
+		
+		row.append(getDeckstringCopySpan(deck, processedClass));
+		
 		var html = "[";
 		for(var j = 0; j < deck.length; j++)
 		{
 			html += '<b class="'+ deck[j].rarity.toLowerCase()+'">' + deck[j].name[0] + "</b>" + deck[j].name.substring(1,deck[j].name.length) + (j == deck.length - 1 ? "]" : ", ");
 		}
-		classDiv.append($("<li>").html(html));		
+		row.append($("<span>").html(html));		
+		parentBlock.append(row);
 	}
 }
 
@@ -486,80 +470,67 @@ function isNeutral(deck)
 	return result;
 }
 
-function getDeckstringCopySpan(deck)
+function getDeckstringCopySpan(deck, deckClass)
 {
 	var result = $("<button>").addClass("btn btn-default btn-sm copy").attr("type", "button").html("<span class='glyphicon glyphicon-copy'/>");
-	result.click(function(){ copyTextToClipboard(getDeckstring(deck)); });
+	result.click(function(){ copyTextToClipboard(getDeckstring(deck, deckClass)); });
 	return result;
 }
 
-function copyTextToClipboard(text) {
-  var textArea = document.createElement("textarea");
-  console.log(text);
-  //
-  // *** This styling is an extra step which is likely not required. ***
-  //
-  // Why is it here? To ensure:
-  // 1. the element is able to have focus and selection.
-  // 2. if element was to flash render it has minimal visual impact.
-  // 3. less flakyness with selection and copying which **might** occur if
-  //    the textarea element is not visible.
-  //
-  // The likelihood is the element won't even render, not even a flash,
-  // so some of these are just precautions. However in IE the element
-  // is visible whilst the popup box asking the user for permission for
-  // the web page to copy to the clipboard.
-  //
+function copyTextToClipboard(text) 
+{
+	var textArea = document.createElement("textarea");
+	console.log(text);
 
-  // Place in top-left corner of screen regardless of scroll position.
-  textArea.style.position = 'fixed';
-  textArea.style.top = 0;
-  textArea.style.left = 0;
+	// Place in top-left corner of screen regardless of scroll position.
+	textArea.style.position = 'fixed';
+	textArea.style.top = 0;
+	textArea.style.left = 0;
 
-  // Ensure it has a small width and height. Setting to 1px / 1em
-  // doesn't work as this gives a negative w/h on some browsers.
-  textArea.style.width = '2em';
-  textArea.style.height = '2em';
+	// Ensure it has a small width and height. Setting to 1px / 1em
+	// doesn't work as this gives a negative w/h on some browsers.
+	textArea.style.width = '2em';
+	textArea.style.height = '2em';
 
-  // We don't need padding, reducing the size if it does flash render.
-  textArea.style.padding = 0;
+	// We don't need padding, reducing the size if it does flash render.
+	textArea.style.padding = 0;
 
-  // Clean up any borders.
-  textArea.style.border = 'none';
-  textArea.style.outline = 'none';
-  textArea.style.boxShadow = 'none';
+	// Clean up any borders.
+	textArea.style.border = 'none';
+	textArea.style.outline = 'none';
+	textArea.style.boxShadow = 'none';
 
-  // Avoid flash of white box if rendered for any reason.
-  textArea.style.background = 'transparent';
+	// Avoid flash of white box if rendered for any reason.
+	textArea.style.background = 'transparent';
 
 
-  textArea.value = text;
+	textArea.value = text;
 
-  document.body.appendChild(textArea);
+	document.body.appendChild(textArea);
 
-  textArea.select();
+	textArea.select();
 
-  try {
-    var successful = document.execCommand('copy');
-  }
+	try {
+	var successful = document.execCommand('copy');
+	}
 	catch (err) {
 		
 	}
 
-  document.body.removeChild(textArea);
+	document.body.removeChild(textArea);
 }
 
-function getDeckstring(deck)
+function getDeckstring(deck, deckClass)
 {
 	var cards = [];
 	
 	for(var cardIdx in deck)
 	{
-		cards.push([deck[cardIdx].dbfId, 1]);
+		cards.push([deck[cardIdx].dbfId, (deck[cardIdx].rarity == "LEGENDARY" ? 1 : 2)]);
 	}
 	
-	var heroIdx = classes.indexOf(processedClass);
-	heroIdx = (heroIdx == -1) ? herosIdx[2] : herosIdx[heroIdx];
+	var heroIdx = classes.indexOf(deckClass);
+	heroIdx = (heroIdx == -1) ? heroesIdx[2] : heroesIdx[heroIdx];
 	
 	const formattedDeck = {
 		cards: cards, // [dbfid, count] pairs
