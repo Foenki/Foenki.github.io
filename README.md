@@ -20,9 +20,7 @@ The results are ordered by class. By default some random ones are selected but y
 
 You can also re-roll the results to get another set of randomly selected decks.
 
-<aside class="success">
-  New with 2.0 : deckstring support. Directly copy the deckstring of your deck to your clipboard with the button next to it. 
-</aside>
+New : deckstring support ! Directly copy the deckstring of your deck to your clipboard with the button next to it. 
 
 <aside class="warning">
   If the deck does not contain 30 cards it cannot be imported into Hearthstone.
