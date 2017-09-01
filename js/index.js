@@ -522,12 +522,7 @@ function copyTextToClipboard(text)
 
 function getDeckstring(deck, deckClass)
 {
-	var cards = [];
-	
-	for(var cardIdx in deck)
-	{
-		cards.push([deck[cardIdx].dbfId, (deck[cardIdx].rarity == "LEGENDARY" ? 1 : 2)]);
-	}
+	var cards = getNbCardsInDeck(deck);
 	
 	var heroIdx = classes.indexOf(deckClass);
 	heroIdx = (heroIdx == -1) ? heroesIdx[2] : heroesIdx[heroIdx];
@@ -539,6 +534,31 @@ function getDeckstring(deck, deckClass)
 	};
 	
 	return encode(formattedDeck);
+}
+
+function getNbCardsInDeck(deck)
+{
+	var currentNbCardsResult = deck.length;
+	var tooManyCards = currentNbCardsResult > 30;
+	
+	var result = [];
+	for(var cardIdx in deck)
+	{
+		var currentCardNb = 1;
+		if((tooManyCards || currentNbCardsResult < 30) && deck[cardIdx].rarity != "LEGENDARY")
+		{
+			currentCardNb = 2;
+			currentNbCardsResult++;
+		}
+		else
+		{
+			currentCardNb = 1;
+		}
+		
+		result.push([deck[cardIdx].dbfId, currentCardNb]);
+	}
+	
+	return result;
 }
 
 function isNeutralVector(results, indexesVector)
