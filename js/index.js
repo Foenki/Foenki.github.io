@@ -108,7 +108,8 @@ function filterStandard(card)
 	|| card.set == "KARA" 
 	|| card.set == "GANGS"
 	|| card.set == "UNGORO"
-	|| card.set == "ICECROWN";
+	|| card.set == "ICECROWN"
+	|| card.set == "LOOTAPALOOZA";
 }
 
 function launch()
